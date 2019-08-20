@@ -1,0 +1,19 @@
+{
+  "name": "tic-tac-toe-node",
+  "version": "1.0.0",
+  "description": "A multiplayer version of Tic-Tac-Toe built on Node.js",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "test"
+  },
+  "keywords": [
+    "tic-tac-toe",
+    "multiplayer"
+  ],
+  "author": "Sean Osler",
+  "license": "ISC"
+}
