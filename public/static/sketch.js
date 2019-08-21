@@ -1,21 +1,26 @@
 function setup() {
-  createCanvas(400, 400);
-  strokeWeight((width * height) * 0.0000625);
+  var mycanvas = createCanvas(400, 400);
+  mycanvas.parent(`gameCanvas`);
+  strokeWeight(10);
 }
 
+var canvasState = 0;
 function draw() {
   background(220);
-  drawGrid()
-  //The 1st paramater is the postion of the mark it rangs from 0-8 the 2nd paramater is for setting the marker to X or O where 0=X and 1=O
-  drawMark(8, 1);
+  if (canvasState == 0) {
+    drawGrid()
+    drawMark(0, 1);
+  }else {
+    
+  }
 }
 
 function drawGrid() {
   stroke(0);
-  line(width / 3, 0, width / 3, height);
-  line(width / 1.5, 0, width / 1.5, height);
-  line(0, height / 3, width, height / 3);
-  line(0, height / 1.5, width, height / 1.5);
+  line(133, 0, 133, 400);
+  line(266, 0, 266, 400);
+  line(0, 133, 400, 133);
+  line(0, 266, 400, 266);
 }
 
 function drawMark(loc, mark) {
@@ -26,12 +31,12 @@ function drawMark(loc, mark) {
   var val5 = Math.floor((((width * height) * 0.0000625) * width) / 800);
   
   //Define val123
-  var val123 = width / 3.252032520325203;
+  var val123 = 133.252032520325203;
   
   //If the val123 needs changed then do that
   if (Math.floor(val123) < Math.round(val123)) {
     val123 -= 1;
-  }else if (Math.floor(width / 3.252032520325203) < Math.ceil(width / 3.252032520325203)) {
+  }else if (Math.floor(133.252032520325203) < Math.ceil(133.252032520325203)) {
     val123 += 2;
   }
   
@@ -41,7 +46,7 @@ function drawMark(loc, mark) {
   
   var val395 = Math.round(width / 1.0126582278481013) - ((width % 209 == 91) ? 91 : 0);
   
-  var val277 = Math.round(width / 1.444043321299639) + ((width % 16 == 4) ? 4 : 0) + ((width % 75 == 0) ? width / 3.4482758620689653 : 0);
+  var val277 = Math.round(width / 1.444043321299639) + ((width % 16 == 4) ? 4 : 0) + ((width % 75 == 0) ? 133.4482758620689653 : 0);
   */
   
   //First Row
