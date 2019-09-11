@@ -4,14 +4,24 @@ function setup() {
   strokeWeight(10);
 }
 
-var canvasState = 0;
+var canvasState = 1;
+var loadingData = {
+  "waiting" : true,
+}
 function draw() {
   background(220);
   if (canvasState == 0) {
     drawGrid()
     drawMark(0, 1);
-  }else {
-    
+  }else if (loadingData.waiting) {
+    textSize(50);
+    text(`Waiting . . .`, 80, 70);
+    textSize(50);
+    text(`You`, 45, 200);
+    stroke(255, 0, 0)
+    line(30, 235, 153, 358);
+    line(30, 358, 153, 235);
+    noStroke();
   }
 }
 

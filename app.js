@@ -1,8 +1,10 @@
 const fs = require('fs');
+var app = require('express')();
+var http = require('http').createServer(app);
+var io = require('socket.io')(http);
 var serveStatic = require('serve-static')
-var express = require('express')
-const app = express()
 const port = 3000
+
 
 //GET / and send it to the user
 app.get('/', (req, res) => {
@@ -12,7 +14,14 @@ app.get('/', (req, res) => {
 });
 
 //Serve static files
-app.use(serveStatic('public/static'));
+app.use(serveStatic('public/static'))
+
+io.on('connection', function(socket){
+  console.log('a user connected');
+  socket.on('disconnect', function(){
+    console.log('user disconnected');
+  });
+});
 
 //Listen on port 3000
-app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+http.listen(port, () => console.log(`Example app listening on port ${port}!`))
