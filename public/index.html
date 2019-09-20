@@ -4,9 +4,15 @@
 	<title>Moocraft's Tic-Tac-Toe</title>
 
 	<meta charset="UTF-8">
-	<meta name="viewport" content="initial-scale=1">
+	<!--<meta name="viewport" content="initial-scale=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name = "viewport" content = "user-scalable=no, width=device-width">-->
+	<meta name="viewport" content="width=device-width, initial-scale=0.9">
 
+	<!--Libraries-->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
 	<script src="sketch.js"></script>
 
 	<script src="/socket.io/socket.io.js"></script>
@@ -21,6 +27,9 @@
 					//PORTIART
 					canvas.style.width = `${windowWidth - (windowWidth / 18)}px`;
 					canvas.style.height = `${windowWidth - (windowWidth / 18)}px`;
+
+					var playerChoose = document.getElementById(`playerChoose`);
+					playerChoose.style.transform = `scaleX(${(windowWidth * windowHeight) / 342866.6666666667})`
 				}else {
 					//LANDSCAPE
 					canvas.style.width = `${windowHeight - (windowHeight / 2.25)}px`;
@@ -49,15 +58,10 @@
 		                                  supported by Chrome and Opera */
 		}
 		/* Horizontal and Vertical Center */
-		.hv-center {
-			position: absolute;
-		    top: 50%;
-		    left: 50%;
-		    -moz-transform: translateX(-50%) translateY(-50%);
-		    -webkit-transform: translateX(-50%) translateY(-50%);
-		    transform: translateX(-50%) translateY(-50%);
-		    display: flex;
-			justify-content: space-around;
+		#gameTypePick {
+			display: flex;
+			justify-content: space-evenly; /* Equal gap between elements */
+			align-items: center; /* Vertical alignment */
 		}
 		.playerChoose {
 			background:    #0000ff;
@@ -69,16 +73,22 @@
 			font:          normal bold 24px/1 "Calibri", sans-serif;
 			text-align:    center;
 			text-shadow:   1px 1px #000000;
+			width: 100%;
+		}
+		.Absolute-Center {
+			margin: auto;
+			position: absolute;
+			top: 0; left: 0; bottom: 0; right: 0;
 		}
 	</style>
 </head>
 <body style="text-align: center;">
 	<div id="gameCanvas" style="display: none;"></div>
-	<div id="gameTypePick" style="display: block;" class="hv-center noselect">
-		<button id="randomPlayer" class="playerChoose">
+	<div id="gameTypePick" style="width: 100%" class="Absolute-Center noselect">
+		<button id="randomPlayer" class="playerChoose" style="">
 			<h1>Random Person</h1>
 		</button>
-		<button id="friendPlayer" class="playerChoose">
+		<button id="friendPlayer" class="playerChoose" style="">
 			<h1>Friend</h1>
 		</button>
 	</div>
