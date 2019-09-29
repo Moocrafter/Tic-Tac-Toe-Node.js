@@ -7,6 +7,8 @@ function setup() {
 var canvasState = 1;
 var loadingData = {
   "waiting" : true,
+  "p1" : null,
+  "p2" : null,
 }
 function draw() {
   background(220);

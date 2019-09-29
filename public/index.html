@@ -22,24 +22,26 @@
 
 	<script type="text/javascript">
 		function resize() {
-			setTimeout(() => {
-				if (windowHeight > windowWidth) {
+			if (typeof canvas == 'undefined') return false;
+			setTimeout(()=> {
+				if (window.height > window.width) {
 					//PORTIART
-					canvas.style.width = `${windowWidth - (windowWidth / 18)}px`;
-					canvas.style.height = `${windowWidth - (windowWidth / 18)}px`;
+					canvas.style.width = `${window.width - (window.width / 18)}px`;
+					canvas.style.height = `${window.width - (window.width / 18)}px`;
 
-					var playerChoose = document.getElementById(`playerChoose`);
-					playerChoose.style.transform = `scaleX(${(windowWidth * windowHeight) / 342866.6666666667})`
+					var playerChoose = document.getElementByClassName(`playerChoose`)
+					playerChoose.style.transform = `scaleX(${(window.width * window.height) / 342866.6666666667})`
 				}else {
 					//LANDSCAPE
-					canvas.style.width = `${windowHeight - (windowHeight / 2.25)}px`;
-					canvas.style.height = `${windowHeight - (windowHeight / 2.25)}px`;
+					canvas.style.width = `${window.height - (window.height / 2.25)}px`;
+					canvas.style.height = `${window.height - (window.height / 2.25)}px`;
 				}
-			}, 100)
+				return true;
+			}, 100);
 		}
 
-		window.onload = resize;
-		window.onresize = resize;
+		window.onload += `var myVar = setInterval(()=>{if (resize()) clearInterval(myVar);}, 100);`
+		window.onresize = resize();
 	</script>
 
 	<style type="text/css">
@@ -57,40 +59,40 @@
 		              user-select: none; /* Non-prefixed version, currently
 		                                  supported by Chrome and Opera */
 		}
-		/* Horizontal and Vertical Center */
+		.playerChoose {
+			background: #0000ff;
+			background: linear-gradient(#0000ff, #6b6bff);
+			border-radius: 5px;
+			padding: 8px 20px;
+			color: #ffffff;
+			display: block;
+			font: normal bold 24px/1 "Calibri", sans-serif;
+			text-align: center;
+			text-shadow: 1px 1px #000000;
+			width: auto;
+		}
 		#gameTypePick {
 			display: flex;
 			justify-content: space-evenly; /* Equal gap between elements */
 			align-items: center; /* Vertical alignment */
+			height: 100vh; /* You can use height: 100% of the parent container */ 
 		}
-		.playerChoose {
-			background:    #0000ff;
-			background:    linear-gradient(#0000ff, #6b6bff);
-			border-radius: 5px;
-			padding:       8px 20px;
-			color:         #ffffff;
-			display:       inline-block;
-			font:          normal bold 24px/1 "Calibri", sans-serif;
-			text-align:    center;
-			text-shadow:   1px 1px #000000;
-			width: 100%;
-		}
-		.Absolute-Center {
-			margin: auto;
-			position: absolute;
-			top: 0; left: 0; bottom: 0; right: 0;
-		}
-	</style>
+		@media screen and (min-width: 768px) {
+			.rwd-break { display: none; }
+        }
+  </style>
 </head>
-<body style="text-align: center;">
+<body style="text-align: center; margin: 0px;">
 	<div id="gameCanvas" style="display: none;"></div>
-	<div id="gameTypePick" style="width: 100%" class="Absolute-Center noselect">
-		<button id="randomPlayer" class="playerChoose" style="">
+	<div id="gameTypePick" style="width: 100%" class="ow noselect">
+		<div id="randomPlayer" class="playerChoose" style="">
 			<h1>Random Person</h1>
-		</button>
-		<button id="friendPlayer" class="playerChoose" style="">
+		</div>
+		<!--<br class="rwd-break">-->
+		<br style="display: block">
+		<div id="friendPlayer" class="playerChoose" style="width: 34.2644019138756%">
 			<h1>Friend</h1>
-		</button>
+		</div>
 	</div>
 </body>
 </html>
