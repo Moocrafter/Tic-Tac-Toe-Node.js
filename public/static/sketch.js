@@ -1,42 +1,77 @@
 function setup() {
+  //Create the canvas and set my canavs to the canvas
   var mycanvas = createCanvas(400, 400);
+
+  //Put our canavs into a div with the id of gameCanvas
   mycanvas.parent(`gameCanvas`);
+
+  //Set the stroke weight to 10
   strokeWeight(10);
 }
 
+//Set the canavs state to 1 or waiting
 var canvasState = 1;
-var loadingData = {
+
+//Set the gameData to the staring postion
+var gameData = {
   "waiting" : true,
   "p1" : null,
   "p2" : null,
 }
+
+//Define isHidden as true so the draw function doesn't draw when we can't see the canvas
+var isHidden = true;
+
+//Set gameData.board to a array with 9 items of value undefiend
+gameData.board = Array.apply(null, Array(9)).map(function (x, i) { return; });
+
 function draw() {
-  background(220);
-  if (canvasState == 0) {
-    drawGrid()
-    drawMark(0, 1);
-  }else if (loadingData.waiting) {
-    textSize(50);
-    text(`Waiting . . .`, 80, 70);
-    textSize(50);
-    text(`You`, 45, 200);
-    stroke(255, 0, 0)
-    line(30, 235, 153, 358);
-    line(30, 358, 153, 235);
-    noStroke();
+  //If isHidden is true meaning the canvas shouldn't be showing then don't draw to the canvas
+  if (!isHidden) {
+    //Set the background to 220 red,green,blue which is a nice gray color
+    background(220);
+
+    //If canvasState is 0 meaning we want to show the game board then draw the game board
+    if (canvasState == 0) {
+      drawGrid()
+      drawMark(0, 1);
+    }else if (gameData.waiting) { //If we are waiting for the other player to join then show a waiting message
+      //Set the textSize to 50
+      textSize(50);
+
+      //Show the text Waiting at 80, 70
+      text(`Waiting . . .`, 80, 70);
+
+      //Show the text You at 45, 200
+      text(`You`, 45, 200);
+
+      //
+      stroke(255, 0, 0)
+      line(30, 235, 153, 358);
+      line(30, 358, 153, 235);
+
+      //Turn off stroke
+      noStroke();
+    }
   }
 }
 
+//Define the drawGrid function
 function drawGrid() {
+  //Set the stroke to black
   stroke(0);
+
+  //Draw the game grid
   line(133, 0, 133, 400);
   line(266, 0, 266, 400);
   line(0, 133, 400, 133);
   line(0, 266, 400, 266);
 }
 
+//Define the drawMArk function
 function drawMark(loc, mark) {
-  //X
+  //The code below is for drawing a X until said other wise
+  //Set the stroke color to red
   stroke(255, 0, 0);
   
   /*//Define val5
@@ -93,13 +128,20 @@ function drawMark(loc, mark) {
     line(395, 277, 277, 395);
   }
   
+  //If mark is 0 that means that we had just drew a X mark
   if (mark == 0) {
+    //Set the stroke to black
     stroke(0);
+
+    //End the function
     return;
   }
   
-  //Y
+  //If mark is 0 meaning we have just drawen a X then set the stroke color to black and end the function
+  //Turn off the fill
   noFill();
+
+  //Set the stroke color to green
   stroke(0, 128, 0);
   
   //First Row
@@ -124,5 +166,4 @@ function drawMark(loc, mark) {
   }else if (loc == 8 && mark == 1) {
     circle(336, 336, 90);
   }
-  
 }

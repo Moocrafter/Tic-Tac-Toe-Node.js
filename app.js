@@ -16,6 +16,7 @@ app.get('/', (req, res) => {
 //Serve static files
 app.use(serveStatic('public/static'))
 
+//Runs on socket connection
 io.on('connection', function(socket){
   console.log('a user connected');
   socket.on('disconnect', function(){
