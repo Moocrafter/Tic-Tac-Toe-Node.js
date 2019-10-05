@@ -14,18 +14,24 @@ var canvasState = 1;
 
 //Set the gameData to the staring postion
 var gameData = {
-  "waiting" : true,
+  "waiting" : false,
   "p1" : null,
   "p2" : null,
+  "gameId" : "",
 }
 
 //Define isHidden as true so the draw function doesn't draw when we can't see the canvas
 var isHidden = true;
 
+var canavsCreated = false;
+
 //Set gameData.board to a array with 9 items of value undefiend
 gameData.board = Array.apply(null, Array(9)).map(function (x, i) { return; });
 
 function draw() {
+  //Once the canvas has been created p5js calls draw so I just set canavs created to true the first time through draw
+  if (!canavsCreated) {canavsCreated = true;resize();}
+
   //If isHidden is true meaning the canvas shouldn't be showing then don't draw to the canvas
   if (!isHidden) {
     //Set the background to 220 red,green,blue which is a nice gray color
@@ -52,6 +58,15 @@ function draw() {
 
       //Turn off stroke
       noStroke();
+    }else if (canvasState == 1) {
+      /*textSize(33);
+      text(`Have a friend go to\nlocalhost:3000/${gameData.gameId}`, 17, 45)*/
+      //textSize(33);
+
+      //textFont(myFont);
+      textStyle(BOLD);
+      textSize(25);
+      text(`Have a friend go to\nlocalhost:3000/${gameData.gameId/*"FWWWWWWW"*/}`, 11.5/*-80*/, /*45*/30)
     }
   }
 }
@@ -166,4 +181,22 @@ function drawMark(loc, mark) {
   }else if (loc == 8 && mark == 1) {
     circle(336, 336, 90);
   }
+}
+
+function gameTypePick(type) {
+  //Random Player
+  if (type == 0) {
+    
+  }else if (type == 1) { //Friend
+    socket.emit("getGameCode", 1);
+    document.getElementById("gameTypePick").style.display = `none`;
+  }
+}
+
+function gotGameCode(gameCode, type) {
+  console.log(`Game Code: ${gameCode}\nType: ${type == 1 ? `Friend` : `Random`}`);
+  gameData.gameId = gameCode;
+  canvasState = 1;
+  isHidden = false;
+  document.getElementById("gameCanvas").style.display = ``;
 }

@@ -17,12 +17,36 @@ app.get('/', (req, res) => {
 app.use(serveStatic('public/static'))
 
 //Runs on socket connection
-io.on('connection', function(socket){
-  console.log('a user connected');
-  socket.on('disconnect', function(){
-    console.log('user disconnected');
-  });
+io.on('connection', (socket) => {
+	//Log that a user connected
+	console.log('a user connected');
+
+	//When a user disconnects log it
+	socket.on('disconnect', () => {
+		console.log('user disconnected');
+	});
+
+	socket.on(`getGameCode`, (type) => {
+		var thisId = shortid.generate();
+		console.log(thisId);
+
+		socket.emit(`recvGameCode`, thisId, type);
+	});
 });
 
 //Listen on port 3000
 http.listen(port, () => console.log(`Example app listening on port ${port}!`))
+
+var shortid = {
+	"generate" : () => {
+		var ALPHABET = '0123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ';
+
+		var ID_LENGTH = 8;
+
+		var rtn = '';
+		for (var i = 0; i < ID_LENGTH; i++) {
+			rtn += ALPHABET.charAt(Math.floor(Math.random() * ALPHABET.length));
+		}
+		return rtn;
+	}
+};

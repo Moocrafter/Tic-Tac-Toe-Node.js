@@ -18,58 +18,100 @@
 	<script src="/socket.io/socket.io.js"></script>
 	<script>
 		var socket = io();
+
+		socket.on(`recvGameCode`, (gameCode, type) => {
+			if (type == 1) gotGameCode(gameCode, type);
+		});
 	</script>
 
 	<script type="text/javascript">
+		//Set the Friend button size
 		$(document).ready(function() {
-			$("#friendPlayer").css({
-				'width': (`${$("#randomPlayer").width() + (isiOS ? 40 : 0)}px`)
-			});
+			buttonResize();
 		});
 
-		var isiOS = ios();
+		//Define the buttonResize function
+		function buttonResize() {
+			$("#friendPlayer").css({ //Select the element with the friendPlayer id
+				//Set the width of the Friend player button to the width of the Random Person button
+				'width': (`${$("#randomPlayer").width()/* + /*(/*isiOS ? 40 : 0)*/}px`)
+			});
+		}
 
-		function ios() {
+		//Set isiOS to the result of the a anonymous function
+		var isiOS = function() {
+			//Set iDevices to a array of apple devices
 			var iDevices = ['iPad Simulator','iPhone Simulator','iPod Simulator','iPad','iPhone','iPod'];
 
+			//If the browser supports the navigator.platform or its set then continue
 			if (!!navigator.platform) {
+				//Loop through all the devcies in the iDevices array
 				while (iDevices.length) {
+					//If the navigator.platfom is the platform that was just popped of the list then return true
 					if (navigator.platform === iDevices.pop()) return true;
 				}
 			}
+
+			//If we aren't on ios then return false
 			return false;
-		}
+		}()
 
+		//Define the resize function
 		function resize() {
-			if (typeof canvas == 'undefined') return false;
-			setTimeout(()=> {
-				if (window.height > window.width) {
-					//PORTIART
-					canvas.style.width = `${window.width - (window.width / 18)}px`;
-					canvas.style.height = `${window.width - (window.width / 18)}px`;
+			//Wait until the canavs appears
+			if (document.getElementById("gameCanvas") == null) return false;
 
-					var playerChoose = document.getElementByClassName(`playerChoose`)
-					playerChoose.style.transform = `scaleX(${(window.width * window.height) / 342866.6666666667})`
-				}else {
-					//LANDSCAPE
-					canvas.style.width = `${window.height - (window.height / 2.25)}px`;
-					canvas.style.height = `${window.height - (window.height / 2.25)}px`;
-				}
+			var done = false;
 
-				$("#friendPlayer").css({
-					'width': (`${$("#randomPlayer").width() + isiOS ? 40 : 0}px`)
-				});
-				return true;
+			//If the platform is a ios devices then wait
+			//if (isiOS) {
+				//Wait 100 milliseconds to allow ios devices to rotate
+				setTimeout(function() {
+					console.log(`The canvas size: ${(windowWidth * windowHeight) / 1977.6625}. #1`)
+
+			//Define the resizeCode function
+			
+			console.log(`The canvas size: ${(windowWidth * windowHeight) / 1977.6625}. #2`)
+			if (window.height > window.width) {
+				//PORTIART
+				canvas.style.width = `${window.width - (window.width / 18)}px`;
+				canvas.style.height = `${window.width - (window.width / 18)}px`;
+
+				//Scale the player choose div in the X direction
+				var playerChoose = document.getElementByClassName(`playerChoose`)
+				playerChoose.style.transform = `scaleX(${(window.width * window.height) / 342866.6666666667})`
+			}else {
+				//LANDSCAPE
+				/*
+				canvas.style.width = `${window.height - (window.height / 2.25)}px`;
+				canvas.style.height = `${window.height - (window.height / 2.25)}px`;
+				*/
+
+				canvas.style.width = `${(windowWidth * windowHeight) / 1977.6625}px`;
+				canvas.style.height = `${(windowWidth * windowHeight) / 1977.6625}px`;
+				console.log((windowWidth * windowHeight) / 1977.6625)
+			}
+
+			//Call the button resize function
+			buttonResize();
+
+			//End the function with true
+			return true;
 			}, 100);
 		}
 
-		window.onload += `var myVar = setInterval(()=>{if (resize()) clearInterval(myVar);}, 100);`
-		window.onresize = resize();
+		//Resize all elements who needs resizing onload
+		/*window.onload = () => {
+			/*var myVar = /*setInterval(()=>{if (resize()/*) clearInterval(myVar);}, 100);
+		}*/
+
+		//On resize resize all elements who need resizing
+		window.onresize = () => resize();
 	</script>
 
 	<style type="text/css">
 		canvas {
-			padding: 0;
+			padding: none;
 		    margin: auto;
 		    display: block;
 		}
@@ -105,12 +147,12 @@
 </head>
 <body style="text-align: center; margin: 0px;">
 	<div id="gameCanvas" style="display: none;"></div>
-	<div id="gameTypePick" style="width: 100%" class="ow noselect">
-		<div id="randomPlayer" class="playerChoose" style="--mywidth: width">
+	<div id="gameTypePick" style="width: 100%" class="noselect">
+		<div id="randomPlayer" class="playerChoose font-face" onclick="gameTypePick(0)">
 			<h1>Random Person</h1>
 		</div>
-		<div id="friendPlayer" class="playerChoose" style="/*width: 34.2644019138756%*/">
-			<script type="text/javascript">$("#friendPlayer").css({'width':(`${$("#randomPlayer").width() + isiOS ? 40 : 0}px`)})</script>
+		<div id="friendPlayer" class="playerChoose" onclick="gameTypePick(1)">
+			<script type="text/javascript">buttonResize()</script>
 			<h1>Friend</h1>
 		</div>
 	</div>
