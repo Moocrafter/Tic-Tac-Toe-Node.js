@@ -14,7 +14,15 @@ app.get('/', (req, res) => {
 });
 
 //Serve static files
-app.use(serveStatic('public/static'))
+app.use(serveStatic('public/static'));
+
+//GET /${gameCode} and send it to the user
+app.get('/:gameCode', (req, res) => {
+	var data = fs.readFileSync(`./public/index.html`).toString();
+	res.write(data);
+	res.write(`<script id="remove">startWithId(${req.params.id});document.getElementById("remove").outerHTML = "";</script>`)
+	res.end();
+});
 
 //Runs on socket connection
 io.on('connection', (socket) => {

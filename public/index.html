@@ -63,40 +63,35 @@
 
 			var done = false;
 
-			//If the platform is a ios devices then wait
-			//if (isiOS) {
-				//Wait 100 milliseconds to allow ios devices to rotate
-				setTimeout(function() {
-					console.log(`The canvas size: ${(windowWidth * windowHeight) / 1977.6625}. #1`)
+			//Wait 100 milliseconds to allow ios devices to rotate
+			setTimeout(function() {
+				if (window.height > window.width) {
+					//PORTIART
+					canvas.style.width = `${window.width - (window.width / 18)}px`;
+					canvas.style.height = `${window.width - (window.width / 18)}px`;
 
-			//Define the resizeCode function
-			
-			console.log(`The canvas size: ${(windowWidth * windowHeight) / 1977.6625}. #2`)
-			if (window.height > window.width) {
-				//PORTIART
-				canvas.style.width = `${window.width - (window.width / 18)}px`;
-				canvas.style.height = `${window.width - (window.width / 18)}px`;
+					//Scale the player choose div in the X direction
+					var playerChoose = document.getElementByClassName(`playerChoose`)
+					playerChoose.style.transform = `scaleX(${(window.width * window.height) / 342866.6666666667})`
+				}else {
+					//LANDSCAPE
+					/*if (Math.round((windowWidth * windowHeight) / 2691.5555555555557) - (windowWidth * windowHeight) / 2691.5555555555557 == 0) {
+						var canavsSize  = (windowWidth * windowHeight) / 2691.5555555555557;
+					}else {
+						var canavsSize = (windowWidth * windowHeight) / 1977.6625;
+					}*/
+					var clientHeight = document.documentElement.clientHeight
 
-				//Scale the player choose div in the X direction
-				var playerChoose = document.getElementByClassName(`playerChoose`)
-				playerChoose.style.transform = `scaleX(${(window.width * window.height) / 342866.6666666667})`
-			}else {
-				//LANDSCAPE
-				/*
-				canvas.style.width = `${window.height - (window.height / 2.25)}px`;
-				canvas.style.height = `${window.height - (window.height / 2.25)}px`;
-				*/
+					canvas.style.width = `${clientHeight - (clientHeight / 3)}px`;
+					canvas.style.height = `${clientHeight - (clientHeight / 3)}px`;
+					console.log(clientHeight - (clientHeight / 3))
+				}
 
-				canvas.style.width = `${(windowWidth * windowHeight) / 1977.6625}px`;
-				canvas.style.height = `${(windowWidth * windowHeight) / 1977.6625}px`;
-				console.log((windowWidth * windowHeight) / 1977.6625)
-			}
+				//Call the button resize function
+				buttonResize();
 
-			//Call the button resize function
-			buttonResize();
-
-			//End the function with true
-			return true;
+				//End the function with true
+				return true;
 			}, 100);
 		}
 
@@ -107,6 +102,11 @@
 
 		//On resize resize all elements who need resizing
 		window.onresize = () => resize();
+
+		//Start tic-tac-toe game with pre set id
+		function startWithId() {
+			document.getElementById(`gameTypePick`).style.display = `none`;
+		}
 	</script>
 
 	<style type="text/css">
@@ -141,7 +141,7 @@
 			justify-content: space-evenly; /* Equal gap between elements */
 			align-items: center; /* Vertical alignment */
 			height: 100vh; /* You can use height: 100% of the parent container */ 
-			flex-wrap:wrap
+			flex-wrap: wrap;
 		}
   </style>
 </head>
