@@ -4,9 +4,7 @@
 	<title>Moocraft's Tic-Tac-Toe</title>
 
 	<meta charset="UTF-8">
-	<!--<meta name="viewport" content="initial-scale=1">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name = "viewport" content = "user-scalable=no, width=device-width">-->
+
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 	<!--Libraries-->
@@ -19,8 +17,19 @@
 	<script>
 		var socket = io();
 
-		socket.on(`recvGameCode`, (gameCode, type) => {
-			if (type == 1) gotGameCode(gameCode, type);
+		socket.on(`recvGameCode`, (gameCode, type, showCopied) => {
+			if (type == 1) gotGameCode(gameCode, type, showCopied);
+		});
+
+		socket.on(`otherJoined`, () => {
+			canvasState = 0;
+			gameData.waiting = false;
+			document.getElementById(`copiedParent`).style.display = `none`;
+			isHidden = false;
+		});
+
+		socket.on(`startPlayerData`, (startPlayerData) => {
+			gameData.myMark = startPlayerData;
 		});
 	</script>
 
@@ -104,11 +113,52 @@
 		window.onresize = () => resize();
 
 		//Start tic-tac-toe game with pre set id
-		function startWithId() {
+		function startWithId(gameCode, showCopied) {
 			document.getElementById(`gameTypePick`).style.display = `none`;
+			gotGameCode(gameCode, 1, showCopied)
+			//document.getElementById(`turns`).style.display = `block`;
+			isHidden = false;
+			canvasState = 0;
+		}
+
+		//Show the element
+		function unfade(element) {
+		    var op = 0.1;  // initial opacity
+		    element.style.display = 'block';
+		    var timer = setInterval(function () {
+		        if (op >= 1){
+		            clearInterval(timer);
+		        }
+		        element.style.opacity = op;
+		        element.style.filter = 'alpha(opacity=' + op * 100 + ")";
+		        op += op * 0.1;
+		    }, 10);
+		}
+
+		//Hide the element
+		function fade(element) {
+		    var op = 1;  // initial opacity
+		    var timer = setInterval(function () {
+		        if (op <= 0.1){
+		            clearInterval(timer);
+		            element.style.display = 'none';
+		        }
+		        element.style.opacity = op;
+		        element.style.filter = 'alpha(opacity=' + op * 100 + ")";
+		        op -= op * 0.1;
+		    }, 50);
+		}
+
+		function fadeCopiedFunc() {
+			copiedElem = document.getElementById("copiedMessage");
+			unfade(copiedElem);
+			setTimeout(() => {
+				fade(copiedElem);
+			}, 1500);
 		}
 	</script>
 
+	<link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
 	<style type="text/css">
 		canvas {
 			padding: none;
@@ -140,7 +190,7 @@
 			display: flex;
 			justify-content: space-evenly; /* Equal gap between elements */
 			align-items: center; /* Vertical alignment */
-			height: 100vh; /* You can use height: 100% of the parent container */ 
+			height: 97.68823903334502034567776718176901340484619140625vh; /* You can use height: 100% of the parent container */
 			flex-wrap: wrap;
 		}
   </style>
@@ -155,6 +205,27 @@
 			<script type="text/javascript">buttonResize()</script>
 			<h1>Friend</h1>
 		</div>
+	</div>
+	<br>
+	<div id="extraData" style="display: none;">
+		<div id="turns" class="noselect" style="font-family: 'Roboto', sans-serif; font-size: 200%;">
+			<b>
+				<span>Current Turn:  </span>
+				<span id="playerTurn" style="color: red;">X</span>
+			</b>
+		</div>
+		<br>
+		<div id="yourMarker" class="noselect" style="font-family: 'Roboto', sans-serif; font-size: 200%;">
+			<b>
+				<span>Your Marker:  </span>
+				<span id="playerTurn" style="color: red;">X</span>
+			</b>
+		</div>
+	</div>
+	<div id="copiedParent" class="noselect" style="display: none;">
+		<button onclick="navigator.clipboard.writeText(`http://localhost:3000/${gameData.gameId}`); fadeCopiedFunc()">Copy Share URL</button>
+		<br>
+		<div id="copiedMessage" style="display: none; opacity: 0.0984771;">Copied</div>
 	</div>
 </body>
 </html>

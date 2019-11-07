@@ -5,6 +5,9 @@ var io = require('socket.io')(http);
 var serveStatic = require('serve-static')
 const port = 3000
 
+var games = {};
+var tempGames = {}
+var userToGame = {}
 
 //GET / and send it to the user
 app.get('/', (req, res) => {
@@ -18,9 +21,16 @@ app.use(serveStatic('public/static'));
 
 //GET /${gameCode} and send it to the user
 app.get('/:gameCode', (req, res) => {
+	//Read index.html
 	var data = fs.readFileSync(`./public/index.html`).toString();
+
+	//Write the data from index.html
 	res.write(data);
-	res.write(`<script id="remove">startWithId(${req.params.id});document.getElementById("remove").outerHTML = "";</script>`)
+
+	//Write script tag that has the client start with a id
+	res.write(`<script id="remove">startWithId("${req.params.gameCode}", false);gameData.waiting = false;document.getElementById("remove").outerHTML = "";</script>`)
+	
+	//End the connecton
 	res.end();
 });
 
@@ -29,16 +39,108 @@ io.on('connection', (socket) => {
 	//Log that a user connected
 	console.log('a user connected');
 
+	if (/https*:\/\/localhost:3000\/(........)/.test(socket.handshake.headers.referer)) {
+		if (tempGames.hasOwnProperty(socket.handshake.headers.referer.replace(/https*:\/\/localhost:3000\//, ""))) {
+			//Set thisId to the id the client used
+			var thisId = socket.handshake.headers.referer.replace(/https*:\/\/localhost:3000\//, "");
+
+			//Set the socket id for a game to p2
+			tempGames[thisId][socket.id] = "p2";
+
+			//Setup the p2 player
+			tempGames[thisId].p2 = {
+				"socketId" : socket.id,
+				"myTurn" : false,
+			}
+
+			//Add the user to the userToGame object
+			userToGame[socket.id] = thisId;
+
+			//Move the game from tempGames to games
+			games[thisId] = tempGames[thisId];
+
+			//Delete the old tempGame
+			delete tempGames[thisId];
+
+			//Tell p1 that p2 has joined
+			socket.to(games[thisId].p1.socketId).emit(`otherJoined`);
+
+			//Set workingGame to the current game we are working on
+			var workingGame = games[thisId];
+
+			//Generate a random number 0 or 1
+			workingGame.currentTurn = Math.round(Math.random());
+
+			//Send the opposite of the random number to p2
+			socket.emit("startPlayerData", (workingGame.currentTurn == 0 ? 1 : 0));
+
+			//Send the origanal random number to p1
+			socket.to(otherPlayer(socket, thisId, 1)).emit("startPlayerData", workingGame.currentTurn);
+
+			if (workingGame.currentTurn == 0) {
+				workingGame.p1.myTurn = true;
+				workingGame.p2.myTurn = false;
+			}
+		}
+	}
+
 	//When a user disconnects log it
 	socket.on('disconnect', () => {
 		console.log('user disconnected');
+
+		//If a player is starting a game or is in a game and disconnects then notify the other player and remove the game
+
+		//If the user is part of a game or tempGame then notify the other player
+		if (userToGame.hasOwnProperty(socket.id)) {
+			var playerSocketId = socket.id;
+			var thisId = userToGame[playerSocketId]
+			//If the player who disconnected is in an active other wise its in a tempGame
+			if (games.hasOwnProperty(thisId)) {
+				//Set thisPlayer to p1 or p2
+				var thisPlayer = games[thisId][playerSocketId];
+				var otherPlayer = (thisPlayer == "p1") ? "p2" : "p1";
+				socket.to(games[thisId][(games[thisId][playerSocketId] == "p1" ? "p2" : "p1")].socketId).emit(`otherPlayerLeft`, ``);
+			}else {
+				//Delete the temporary game
+				delete tempGames[thisId];
+			}
+
+			//Delete the old user from the userToGame object
+			delete userToGame[socket.id];
+		}
 	});
 
+	//When a user wants to get a new game code generate one and set up a temp game
 	socket.on(`getGameCode`, (type) => {
-		var thisId = shortid.generate();
-		console.log(thisId);
+		//Set doesExist to true
+		var doesExist = true;
 
-		socket.emit(`recvGameCode`, thisId, type);
+		//Keep generating short id codes until we get one that hasn't been used
+		while (doesExist) {
+			//Generate short game id
+			var thisId = shortid.generate();
+
+			//If the game code generated hasn't been used than set doesExist to false
+			if (!games.hasOwnProperty(thisId) || !tempGames.hasOwnProperty(thisId)) doesExist = false;
+			//Set tempGames at the generated id to a empty json object
+			tempGames[thisId] = {};
+
+			//Set the socket id for a game to p1
+			tempGames[thisId][socket.id] = "p1";
+
+			//Setup the p1 player
+			tempGames[thisId].p1 = {
+				"socketId" : socket.id,
+				"myTurn" : false,
+			}
+
+			//Add the user to the userToGame object
+			userToGame[socket.id] = thisId;
+			console.log(tempGames)
+
+			//Tell the client that the game code hs been generated and accepted
+			socket.emit(`recvGameCode`, thisId, type, true);
+		}
 	});
 });
 
@@ -58,3 +160,14 @@ var shortid = {
 		return rtn;
 	}
 };
+
+//Define a function which sends data to both socket ids in a game
+function sendDataToBoth(name, data, socket, id) {
+	socket.emit(name, data);
+	socket.to(games[id][(games[id][socket] == "p1" ? "p2" : "p1")].socketId).emit(name, data);
+}
+
+const otherPlayer = (socket, id, gameScope) => {
+	if (gameScope == 0) return tempGames[id][(games[id][socket] == "p1" ? "p2" : "p1")].socketId;
+	else return games[id][(games[id][socket] == "p1" ? "p2" : "p1")].socketId;
+}

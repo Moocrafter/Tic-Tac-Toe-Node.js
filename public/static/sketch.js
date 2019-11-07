@@ -15,9 +15,8 @@ var canvasState = 1;
 //Set the gameData to the staring postion
 var gameData = {
   "waiting" : false,
-  "p1" : null,
-  "p2" : null,
   "gameId" : "",
+  "myMark" : null,
 }
 
 //Define isHidden as true so the draw function doesn't draw when we can't see the canvas
@@ -39,16 +38,15 @@ function draw() {
 
     //If canvasState is 0 meaning we want to show the game board then draw the game board
     if (canvasState == 0) {
-      drawGrid()
-      drawMark(0, 1);
+      drawGrid();
     }else if (gameData.waiting) { //If we are waiting for the other player to join then show a waiting message
       //Set the textSize to 50
-      textSize(50);
+      textSize(45);
 
       //Show the text Waiting at 80, 70
-      text(`Waiting . . .`, 80, 70);
+      text(`Waiting . . .`, 80, 150);
 
-      //Show the text You at 45, 200
+      /*//Show the text You at 45, 200
       text(`You`, 45, 200);
 
       //
@@ -58,7 +56,7 @@ function draw() {
 
       //Turn off stroke
       noStroke();
-    }else if (canvasState == 1) {
+    //}else if (canvasState == 1) {
       /*textSize(33);
       text(`Have a friend go to\nlocalhost:3000/${gameData.gameId}`, 17, 45)*/
       //textSize(33);
@@ -68,6 +66,12 @@ function draw() {
       textSize(25);
       text(`Have a friend go to\nlocalhost:3000/${gameData.gameId/*"FWWWWWWW"*/}`, 11.5/*-80*/, /*45*/30)
     }
+  }
+}
+
+function mouseClicked() {
+  if (mouseX >= 0 && mouseY >= 0 && mouseX <= 400 && mouseY <= 400) {
+    console.log("clicked canavs")
   }
 }
 
@@ -193,10 +197,12 @@ function gameTypePick(type) {
   }
 }
 
-function gotGameCode(gameCode, type) {
+function gotGameCode(gameCode, type, showCopied) {
   console.log(`Game Code: ${gameCode}\nType: ${type == 1 ? `Friend` : `Random`}`);
   gameData.gameId = gameCode;
   canvasState = 1;
   isHidden = false;
+  gameData.waiting = true;
+  document.getElementById("copiedParent").style.display = (showCopied ? "" : "none");
   document.getElementById("gameCanvas").style.display = ``;
 }
