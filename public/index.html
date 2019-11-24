@@ -15,30 +15,51 @@
 
 	<script src="/socket.io/socket.io.js"></script>
 	<script>
+		//Connect to the socket.io server
 		var socket = io();
 
+		//On recvGameCode call the gotGameCode function
 		socket.on(`recvGameCode`, (gameCode, type, showCopied) => {
 			if (type == 1) gotGameCode(gameCode, type, showCopied);
 		});
 
+		//When the server notifies us about the other player joining the game this function run
 		socket.on(`otherJoined`, () => {
-			canvasState = 0;
-			gameData.waiting = false;
+			//Hide the url copy button
 			document.getElementById(`copiedParent`).style.display = `none`;
-			isHidden = false;
+
+			//Show the extra data like which players turn it is
+			document.getElementById(`extraData`).style.display = ``;
+
+			//Set waiting to false to dra the grid
+			gameData.waiting = false;
 		});
 
+		//When the server gives us the necessary data for knowing whose turn it is set myMArk and set whose turn it is
 		socket.on(`startPlayerData`, (startPlayerData) => {
 			gameData.myMark = startPlayerData;
+			if (startPlayerData == 0) gameData.myTurn = true;
+		});
+
+		//When the other player leaves the game
+		socket.on(`otherPlayerLeft`, () => {
+			//Show the "other player left" overlay
+			otherLeft.open();
 		});
 	</script>
 
+	<!--On document load and global vars-->
 	<script type="text/javascript">
-		//Set the Friend button size
 		$(document).ready(function() {
+			//Set the Friend button size
 			buttonResize();
 		});
 
+		var invalidCode;
+	</script>
+
+	<!--Resizing Code-->
+	<script type="text/javascript">
 		//Define the buttonResize function
 		function buttonResize() {
 			$("#friendPlayer").css({ //Select the element with the friendPlayer id
@@ -104,11 +125,6 @@
 			}, 100);
 		}
 
-		//Resize all elements who needs resizing onload
-		/*window.onload = () => {
-			/*var myVar = /*setInterval(()=>{if (resize()/*) clearInterval(myVar);}, 100);
-		}*/
-
 		//On resize resize all elements who need resizing
 		window.onresize = () => resize();
 
@@ -116,9 +132,9 @@
 		function startWithId(gameCode, showCopied) {
 			document.getElementById(`gameTypePick`).style.display = `none`;
 			gotGameCode(gameCode, 1, showCopied)
-			//document.getElementById(`turns`).style.display = `block`;
+			document.getElementById(`extraData`).style.display = ``;
 			isHidden = false;
-			canvasState = 0;
+			gameData.waiting = false;
 		}
 
 		//Show the element
@@ -158,6 +174,75 @@
 		}
 	</script>
 
+	<!--Overlay Handling Parts-->
+	<script type="text/javascript">
+		//Is a object which handles invalid game code parts
+		function InvalidCode() {
+			//Make sure the code knows that the overlay is showing or not which allows us to allow clicking anywhere to close the overlay
+			this.isShowing = true;
+
+			//Change the url to remove the game code
+			history.replaceState("", "Moocraft's Tic-Tac-Toe", "http://localhost:3000");
+
+			//Show the invalid code overlay
+			document.getElementById("invalidCodeOverlay").style.display = "";
+
+			//Handles closing events
+			this.close = () => {
+				this.isShowing = false;
+				document.getElementById("invalidCodeOverlay").style.display = "none";
+			};
+		}
+
+		//Is a object which handles the other player overlay parts
+		function OtherLeft() {
+			//Make sure the code knows that the overlay is showing or not which allows us to allow clicking anywhere to close the overlay
+			this.isShowing = false;
+
+			//Handles closing events
+			this.close = () => {
+				this.isShowing = false;
+				document.getElementById("otherPlayerLeftOverlay").style.display = "none";
+			}
+
+			//Handles opening events
+			this.open = () => {
+				this.isShowing = true;
+				document.getElementById("otherPlayerLeftOverlay").style.display = "";
+			}
+		}
+
+		//Create a OtherLeft object
+		var otherLeft = new OtherLeft();
+
+		//When the window is clicked the function runs
+		window.onclick = () => {
+			//As long as invalidCode is not undefined then check if the overlay is showing if so close it
+			if (invalidCode != undefined) if (invalidCode.isShowing) invalidCode.close();
+
+			//Check if the overlay is showing if so close it and move to home screen
+			if (otherLeft.isShowing) {
+				//Close the overlay
+				otherLeft.close();
+
+				//Hide the canvas
+				document.getElementById("gameCanvas").style.display = "none";
+
+				//Hide the extra data
+				document.getElementById("extraData").style.display = "none";
+
+				//Show the game type pick menu
+				document.getElementById("gameTypePick").style.display = "";
+
+				//Set isHiden to true to hide the canvas
+				isHidden = true;
+
+				//Set waiting to true becasue the next time we see the canvas it will be waiting
+				gameData.waiting = true;
+			}
+		}
+	</script>
+
 	<link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
 	<style type="text/css">
 		canvas {
@@ -193,6 +278,58 @@
 			height: 97.68823903334502034567776718176901340484619140625vh; /* You can use height: 100% of the parent container */
 			flex-wrap: wrap;
 		}
+
+		.overlay {
+			position: fixed; /* Sit on top of the page content */
+			width: 60%; /* Full width (cover the whole page) */
+			height: 25%; /* Full height (cover the whole page) */
+			/*top: 0;
+			left: 25%;
+			right: 0;
+			bottom: 0;*/
+			/*-62.80446549391069vh
+			-464.5px*/
+			transform: translate(20vw, -61.36063408190224vh);
+			background-color: rgb(255,255,255);
+			border-style: solid;
+			border-color: gray;
+			z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+			cursor: pointer; /* Add a pointer on hover */
+		}
+
+		.overlayText {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+			-ms-transform: translate(-50%,-50%);
+		}
+
+		.close {
+		  position: absolute;
+		  right: 32px;
+		  top: 32px;
+		  width: 32px;
+		  height: 32px;
+		  opacity: 1;
+		}
+		.close:hover {
+		  opacity: 0.5;
+		}
+		.close:before, .close:after {
+		  position: absolute;
+		  left: 15px;
+		  content: ' ';
+		  height: 33px;
+		  width: 2px;
+		  background-color: #333;
+		}
+		.close:before {
+		  transform: rotate(45deg);
+		}
+		.close:after {
+		  transform: rotate(-45deg);
+		}
   </style>
 </head>
 <body style="text-align: center; margin: 0px;">
@@ -206,26 +343,34 @@
 			<h1>Friend</h1>
 		</div>
 	</div>
-	<br>
 	<div id="extraData" style="display: none;">
+		<br>
 		<div id="turns" class="noselect" style="font-family: 'Roboto', sans-serif; font-size: 200%;">
 			<b>
-				<span>Current Turn:  </span>
-				<span id="playerTurn" style="color: red;">X</span>
+				Current Turn: Opponent
 			</b>
 		</div>
-		<br>
+		<!--<br>
 		<div id="yourMarker" class="noselect" style="font-family: 'Roboto', sans-serif; font-size: 200%;">
 			<b>
 				<span>Your Marker:  </span>
 				<span id="playerTurn" style="color: red;">X</span>
 			</b>
-		</div>
+		</div>-->
 	</div>
 	<div id="copiedParent" class="noselect" style="display: none;">
+		<br>
 		<button onclick="navigator.clipboard.writeText(`http://localhost:3000/${gameData.gameId}`); fadeCopiedFunc()">Copy Share URL</button>
 		<br>
 		<div id="copiedMessage" style="display: none; opacity: 0.0984771;">Copied</div>
+	</div>
+	<div id="invalidCodeOverlay" class="overlay" style="display: none; font-family: 'Roboto', sans-serif; font-size: 350%;">
+		<div class="close"></div>
+		<b class="overlayText">Invalid Game Code!</b>
+	</div>
+	<div id="otherPlayerLeftOverlay" class="overlay" style="display: none; font-family: 'Roboto', sans-serif; font-size: 350%; position: absolute; top: 87.10369881109644vh">
+		<div class="close"></div>
+		<b class="overlayText">The other player has left!</b>
 	</div>
 </body>
 </html>

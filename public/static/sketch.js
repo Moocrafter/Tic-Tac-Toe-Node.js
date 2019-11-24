@@ -1,22 +1,23 @@
 function setup() {
   //Create the canvas and set my canavs to the canvas
-  var mycanvas = createCanvas(400, 400);
+  let mycanvas = createCanvas(400, 400);
 
   //Put our canavs into a div with the id of gameCanvas
   mycanvas.parent(`gameCanvas`);
 
+  //Attach listener for activity on canvas only
+  mycanvas.mouseClicked(canvasClicked);
+
   //Set the stroke weight to 10
   strokeWeight(10);
 }
-
-//Set the canavs state to 1 or waiting
-var canvasState = 1;
 
 //Set the gameData to the staring postion
 var gameData = {
   "waiting" : false,
   "gameId" : "",
   "myMark" : null,
+  "myTurn" : false,
 }
 
 //Define isHidden as true so the draw function doesn't draw when we can't see the canvas
@@ -37,14 +38,14 @@ function draw() {
     background(220);
 
     //If canvasState is 0 meaning we want to show the game board then draw the game board
-    if (canvasState == 0) {
+    if (!gameData.waiting) {
       drawGrid();
-    }else if (gameData.waiting) { //If we are waiting for the other player to join then show a waiting message
+    }else { //If we are waiting for the other player to join then show a waiting message
       //Set the textSize to 50
-      textSize(45);
+     // textSize(45);
 
       //Show the text Waiting at 80, 70
-      text(`Waiting . . .`, 80, 150);
+     // text(`Waiting . . .`, 80, 150);
 
       /*//Show the text You at 45, 200
       text(`You`, 45, 200);
@@ -62,17 +63,23 @@ function draw() {
       //textSize(33);
 
       //textFont(myFont);
+      //Turn off the stroke to avoid problems
+      noStroke();
+
+      //Make the text bold
       textStyle(BOLD);
+
+      //Set the text size
       textSize(25);
-      text(`Have a friend go to\nlocalhost:3000/${gameData.gameId/*"FWWWWWWW"*/}`, 11.5/*-80*/, /*45*/30)
+
+      //Show the text
+      text(`Have a friend go to\nlocalhost:3000/${gameData.gameId}`, 11.5/*-80*/, /*45*/30)
     }
   }
 }
 
-function mouseClicked() {
-  if (mouseX >= 0 && mouseY >= 0 && mouseX <= 400 && mouseY <= 400) {
-    console.log("clicked canavs")
-  }
+function canvasClicked() {
+  console.log("clicked canavs")
 }
 
 //Define the drawGrid function
@@ -200,7 +207,6 @@ function gameTypePick(type) {
 function gotGameCode(gameCode, type, showCopied) {
   console.log(`Game Code: ${gameCode}\nType: ${type == 1 ? `Friend` : `Random`}`);
   gameData.gameId = gameCode;
-  canvasState = 1;
   isHidden = false;
   gameData.waiting = true;
   document.getElementById("copiedParent").style.display = (showCopied ? "" : "none");

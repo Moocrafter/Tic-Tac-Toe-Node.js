@@ -27,9 +27,15 @@ app.get('/:gameCode', (req, res) => {
 	//Write the data from index.html
 	res.write(data);
 
-	//Write script tag that has the client start with a id
-	res.write(`<script id="remove">startWithId("${req.params.gameCode}", false);gameData.waiting = false;document.getElementById("remove").outerHTML = "";</script>`)
-	
+	//Make sure that the game code used is valid if not then tell the client
+	if (tempGames.hasOwnProperty(req.params.gameCode)) {
+		//Write script tag that has the client start with a id
+		res.write(`<script id="remove">startWithId("${req.params.gameCode}", false);gameData.waiting = false;document.getElementById("remove").outerHTML = "";</script>`)
+	}else {
+		//Write a line of js code that shows a "invalid code" message on screen if the game code provided is not real 
+		res.write(`<script id="remove">invalidCode = new InvalidCode();document.getElementById("remove").outerHTML = "";</script>`);
+	}
+
 	//End the connecton
 	res.end();
 });
@@ -61,9 +67,9 @@ io.on('connection', (socket) => {
 
 			//Delete the old tempGame
 			delete tempGames[thisId];
-
+console.log('hhhhhhhhhhhhhhhhhh')
 			//Tell p1 that p2 has joined
-			socket.to(games[thisId].p1.socketId).emit(`otherJoined`);
+			socket.to(games[thisId].p1.socketId).emit(`otherJoined`, "");
 
 			//Set workingGame to the current game we are working on
 			var workingGame = games[thisId];
@@ -89,24 +95,44 @@ io.on('connection', (socket) => {
 		console.log('user disconnected');
 
 		//If a player is starting a game or is in a game and disconnects then notify the other player and remove the game
-
+		console.log(`This socket id: ${socket.id}\nuserToGame: ${JSON.stringify(userToGame)}`);
 		//If the user is part of a game or tempGame then notify the other player
 		if (userToGame.hasOwnProperty(socket.id)) {
+			//Define the playerSocketId var because after a while we lose the players socket id
 			var playerSocketId = socket.id;
-			var thisId = userToGame[playerSocketId]
-			//If the player who disconnected is in an active other wise its in a tempGame
+
+			//Get this players game id
+			var thisId = userToGame[playerSocketId];
+
+			//If the player who disconnected is in an active otherwise its in a tempGame
 			if (games.hasOwnProperty(thisId)) {
-				//Set thisPlayer to p1 or p2
+				//Set thisPlayer to p1 or p2 based on if they are p1 or p2
 				var thisPlayer = games[thisId][playerSocketId];
+
+				//Based on this player being p1 or p2 pick the opposite player side
 				var otherPlayer = (thisPlayer == "p1") ? "p2" : "p1";
+
+				//Send the other player a message that this player disconnected
 				socket.to(games[thisId][(games[thisId][playerSocketId] == "p1" ? "p2" : "p1")].socketId).emit(`otherPlayerLeft`, ``);
+				
+				//Remove the other player from the userToGame object from the context of games
+				delete userToGame[games[thisId][(games[thisId][playerSocketId] == "p1" ? "p2" : "p1")].socketId];
+				console.log(`This socket id: ${playerSocketId}\nSocket id removed: ${JSON.stringify(games[thisId][(games[thisId][playerSocketId] == "p1" ? "p2" : "p1")])}`)
+				//Delete the game
+				delete games[thisId];
 			}else {
+				//If there are more than two players in a tempGame than send a disconnect messgae
+				if (Object.keys(tempGames[thisId]).length > 2) socket.to(tempGames[thisId][(tempGames[thisId][playerSocketId] == "p1" ? "p2" : "p1")].socketId).emit(`otherPlayerLeft`, ``);
+			
+				//Remove the other player from the userToGame object from the context of tempGames
+				delete userToGame[tempGames[thisId][(tempGames[thisId][playerSocketId] == "p1" ? "p2" : "p1")]];
+
 				//Delete the temporary game
 				delete tempGames[thisId];
 			}
 
 			//Delete the old user from the userToGame object
-			delete userToGame[socket.id];
+			delete userToGame[playerSocketId];
 		}
 	});
 
@@ -118,28 +144,32 @@ io.on('connection', (socket) => {
 		//Keep generating short id codes until we get one that hasn't been used
 		while (doesExist) {
 			//Generate short game id
-			var thisId = shortid.generate();
+			var thisId = genShortId();
 
+			//Add profanity filter
 			//If the game code generated hasn't been used than set doesExist to false
-			if (!games.hasOwnProperty(thisId) || !tempGames.hasOwnProperty(thisId)) doesExist = false;
-			//Set tempGames at the generated id to a empty json object
-			tempGames[thisId] = {};
+			if (!games.hasOwnProperty(thisId) || !tempGames.hasOwnProperty(thisId)) {
+				doesExist = false;
 
-			//Set the socket id for a game to p1
-			tempGames[thisId][socket.id] = "p1";
+				//Set tempGames at the generated id to a empty json object
+				tempGames[thisId] = {};
 
-			//Setup the p1 player
-			tempGames[thisId].p1 = {
-				"socketId" : socket.id,
-				"myTurn" : false,
+				//Set the socket id for a game to p1
+				tempGames[thisId][socket.id] = "p1";
+
+				//Setup the p1 player
+				tempGames[thisId].p1 = {
+					"socketId" : socket.id,
+					"myTurn" : false,
+				}
+
+				//Add the user to the userToGame object
+				userToGame[socket.id] = thisId;
+				console.log(tempGames)
+
+				//Tell the client that the game code hs been generated and accepted
+				socket.emit(`recvGameCode`, thisId, type, true);
 			}
-
-			//Add the user to the userToGame object
-			userToGame[socket.id] = thisId;
-			console.log(tempGames)
-
-			//Tell the client that the game code hs been generated and accepted
-			socket.emit(`recvGameCode`, thisId, type, true);
 		}
 	});
 });
@@ -147,18 +177,16 @@ io.on('connection', (socket) => {
 //Listen on port 3000
 http.listen(port, () => console.log(`Example app listening on port ${port}!`))
 
-var shortid = {
-	"generate" : () => {
-		var ALPHABET = '0123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ';
+var genShortId = () => {
+	var ALPHABET = '0123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ';
 
-		var ID_LENGTH = 8;
+	var ID_LENGTH = 8;
 
-		var rtn = '';
-		for (var i = 0; i < ID_LENGTH; i++) {
-			rtn += ALPHABET.charAt(Math.floor(Math.random() * ALPHABET.length));
-		}
-		return rtn;
+	var rtn = '';
+	for (var i = 0; i < ID_LENGTH; i++) {
+		rtn += ALPHABET.charAt(Math.floor(Math.random() * ALPHABET.length));
 	}
+	return rtn;
 };
 
 //Define a function which sends data to both socket ids in a game
