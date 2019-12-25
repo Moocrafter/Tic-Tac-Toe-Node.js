@@ -11,12 +11,19 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
+	<script src="extra.js"></script>
 	<script src="sketch.js"></script>
 
 	<script src="/socket.io/socket.io.js"></script>
 	<script>
 		//Connect to the socket.io server
 		var socket = io();
+
+		socket.on('connect', () => {
+			if (/https*:\/\/localhost:3000\/(........)/.test(location.href)) {
+				socket.emit("myIdIs", location.href.replace(/https*:\/\/localhost:3000\//, ""));
+			}
+		});
 
 		//On recvGameCode call the gotGameCode function
 		socket.on(`recvGameCode`, (gameCode, type, showCopied) => {
@@ -44,11 +51,20 @@
 		//When the other player leaves the game
 		socket.on(`otherPlayerLeft`, () => {
 			//Show the "other player left" overlay
-			otherLeft.open();
+			otherLeft.open();		
+		});
+
+		//Show the invalid code overlay when the server says to
+		socket.on(`invalidCode`, () => {
+			//If this check is true we know the overlay is not showing so show it because invalidCode wouldn't be undefined
+			if (invalidCode == undefined) {
+				//Show the invalid code overlay
+				invalidCode = new InvalidCode();
+			}
 		});
 	</script>
 
-	<!--On document load and global vars-->
+	<!--On document load and global vars and helper functions-->
 	<script type="text/javascript">
 		$(document).ready(function() {
 			//Set the Friend button size
@@ -56,191 +72,6 @@
 		});
 
 		var invalidCode;
-	</script>
-
-	<!--Resizing Code-->
-	<script type="text/javascript">
-		//Define the buttonResize function
-		function buttonResize() {
-			$("#friendPlayer").css({ //Select the element with the friendPlayer id
-				//Set the width of the Friend player button to the width of the Random Person button
-				'width': (`${$("#randomPlayer").width()/* + /*(/*isiOS ? 40 : 0)*/}px`)
-			});
-		}
-
-		//Set isiOS to the result of the a anonymous function
-		var isiOS = function() {
-			//Set iDevices to a array of apple devices
-			var iDevices = ['iPad Simulator','iPhone Simulator','iPod Simulator','iPad','iPhone','iPod'];
-
-			//If the browser supports the navigator.platform or its set then continue
-			if (!!navigator.platform) {
-				//Loop through all the devcies in the iDevices array
-				while (iDevices.length) {
-					//If the navigator.platfom is the platform that was just popped of the list then return true
-					if (navigator.platform === iDevices.pop()) return true;
-				}
-			}
-
-			//If we aren't on ios then return false
-			return false;
-		}()
-
-		//Define the resize function
-		function resize() {
-			//Wait until the canavs appears
-			if (document.getElementById("gameCanvas") == null) return false;
-
-			var done = false;
-
-			//Wait 100 milliseconds to allow ios devices to rotate
-			setTimeout(function() {
-				if (window.height > window.width) {
-					//PORTIART
-					canvas.style.width = `${window.width - (window.width / 18)}px`;
-					canvas.style.height = `${window.width - (window.width / 18)}px`;
-
-					//Scale the player choose div in the X direction
-					var playerChoose = document.getElementByClassName(`playerChoose`)
-					playerChoose.style.transform = `scaleX(${(window.width * window.height) / 342866.6666666667})`
-				}else {
-					//LANDSCAPE
-					/*if (Math.round((windowWidth * windowHeight) / 2691.5555555555557) - (windowWidth * windowHeight) / 2691.5555555555557 == 0) {
-						var canavsSize  = (windowWidth * windowHeight) / 2691.5555555555557;
-					}else {
-						var canavsSize = (windowWidth * windowHeight) / 1977.6625;
-					}*/
-					var clientHeight = document.documentElement.clientHeight
-
-					canvas.style.width = `${clientHeight - (clientHeight / 3)}px`;
-					canvas.style.height = `${clientHeight - (clientHeight / 3)}px`;
-					console.log(clientHeight - (clientHeight / 3))
-				}
-
-				//Call the button resize function
-				buttonResize();
-
-				//End the function with true
-				return true;
-			}, 100);
-		}
-
-		//On resize resize all elements who need resizing
-		window.onresize = () => resize();
-
-		//Start tic-tac-toe game with pre set id
-		function startWithId(gameCode, showCopied) {
-			document.getElementById(`gameTypePick`).style.display = `none`;
-			gotGameCode(gameCode, 1, showCopied)
-			document.getElementById(`extraData`).style.display = ``;
-			isHidden = false;
-			gameData.waiting = false;
-		}
-
-		//Show the element
-		function unfade(element) {
-		    var op = 0.1;  // initial opacity
-		    element.style.display = 'block';
-		    var timer = setInterval(function () {
-		        if (op >= 1){
-		            clearInterval(timer);
-		        }
-		        element.style.opacity = op;
-		        element.style.filter = 'alpha(opacity=' + op * 100 + ")";
-		        op += op * 0.1;
-		    }, 10);
-		}
-
-		//Hide the element
-		function fade(element) {
-		    var op = 1;  // initial opacity
-		    var timer = setInterval(function () {
-		        if (op <= 0.1){
-		            clearInterval(timer);
-		            element.style.display = 'none';
-		        }
-		        element.style.opacity = op;
-		        element.style.filter = 'alpha(opacity=' + op * 100 + ")";
-		        op -= op * 0.1;
-		    }, 50);
-		}
-
-		function fadeCopiedFunc() {
-			copiedElem = document.getElementById("copiedMessage");
-			unfade(copiedElem);
-			setTimeout(() => {
-				fade(copiedElem);
-			}, 1500);
-		}
-	</script>
-
-	<!--Overlay Handling Parts-->
-	<script type="text/javascript">
-		//Is a object which handles invalid game code parts
-		function InvalidCode() {
-			//Make sure the code knows that the overlay is showing or not which allows us to allow clicking anywhere to close the overlay
-			this.isShowing = true;
-
-			//Change the url to remove the game code
-			history.replaceState("", "Moocraft's Tic-Tac-Toe", "http://localhost:3000");
-
-			//Show the invalid code overlay
-			document.getElementById("invalidCodeOverlay").style.display = "";
-
-			//Handles closing events
-			this.close = () => {
-				this.isShowing = false;
-				document.getElementById("invalidCodeOverlay").style.display = "none";
-			};
-		}
-
-		//Is a object which handles the other player overlay parts
-		function OtherLeft() {
-			//Make sure the code knows that the overlay is showing or not which allows us to allow clicking anywhere to close the overlay
-			this.isShowing = false;
-
-			//Handles closing events
-			this.close = () => {
-				this.isShowing = false;
-				document.getElementById("otherPlayerLeftOverlay").style.display = "none";
-			}
-
-			//Handles opening events
-			this.open = () => {
-				this.isShowing = true;
-				document.getElementById("otherPlayerLeftOverlay").style.display = "";
-			}
-		}
-
-		//Create a OtherLeft object
-		var otherLeft = new OtherLeft();
-
-		//When the window is clicked the function runs
-		window.onclick = () => {
-			//As long as invalidCode is not undefined then check if the overlay is showing if so close it
-			if (invalidCode != undefined) if (invalidCode.isShowing) invalidCode.close();
-
-			//Check if the overlay is showing if so close it and move to home screen
-			if (otherLeft.isShowing) {
-				//Close the overlay
-				otherLeft.close();
-
-				//Hide the canvas
-				document.getElementById("gameCanvas").style.display = "none";
-
-				//Hide the extra data
-				document.getElementById("extraData").style.display = "none";
-
-				//Show the game type pick menu
-				document.getElementById("gameTypePick").style.display = "";
-
-				//Set isHiden to true to hide the canvas
-				isHidden = true;
-
-				//Set waiting to true becasue the next time we see the canvas it will be waiting
-				gameData.waiting = true;
-			}
-		}
 	</script>
 
 	<link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
@@ -330,6 +161,21 @@
 		.close:after {
 		  transform: rotate(-45deg);
 		}
+
+		@supports (-webkit-overflow-scrolling: touch) {
+		  /* CSS specific to iOS devices */
+		  body {
+		  	position: fixed;
+		  }
+		}
+
+		@supports not (-webkit-overflow-scrolling: touch) {
+		  /* CSS for other than iOS devices */
+		  html, body {
+		  	height: 100%;
+		    overflow: hidden;
+		  }
+		}
   </style>
 </head>
 <body style="text-align: center; margin: 0px;">
@@ -360,7 +206,7 @@
 	</div>
 	<div id="copiedParent" class="noselect" style="display: none;">
 		<br>
-		<button onclick="navigator.clipboard.writeText(`http://localhost:3000/${gameData.gameId}`); fadeCopiedFunc()">Copy Share URL</button>
+		<button onclick="copyToClipboard(`http://localhost:3000/${gameData.gameId}`); fadeCopiedFunc()">Copy Share URL</button>
 		<br>
 		<div id="copiedMessage" style="display: none; opacity: 0.0984771;">Copied</div>
 	</div>

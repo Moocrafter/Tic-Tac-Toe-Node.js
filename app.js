@@ -3,9 +3,11 @@ var app = require('express')();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var serveStatic = require('serve-static')
+var Profane = require('profane');
+var p = new Profane();
 const port = 3000
 
-var games = {};
+var games = {}
 var tempGames = {}
 var userToGame = {}
 
@@ -67,9 +69,9 @@ io.on('connection', (socket) => {
 
 			//Delete the old tempGame
 			delete tempGames[thisId];
-console.log('hhhhhhhhhhhhhhhhhh')
+
 			//Tell p1 that p2 has joined
-			socket.to(games[thisId].p1.socketId).emit(`otherJoined`, "");
+			socket.to(games[thisId].p1.socketId).emit(`otherJoined`);
 
 			//Set workingGame to the current game we are working on
 			var workingGame = games[thisId];
@@ -146,31 +148,37 @@ console.log('hhhhhhhhhhhhhhhhhh')
 			//Generate short game id
 			var thisId = genShortId();
 
-			//Add profanity filter
-			//If the game code generated hasn't been used than set doesExist to false
-			if (!games.hasOwnProperty(thisId) || !tempGames.hasOwnProperty(thisId)) {
-				doesExist = false;
+			//Check if the game code generated contains profane words if so skip that game code
+			if (!isProfane(thisId)) {
+				//If the game code generated hasn't been used than set doesExist to false
+				if (!doesIdExist(thisId)) {
+					doesExist = false;
 
-				//Set tempGames at the generated id to a empty json object
-				tempGames[thisId] = {};
+					//Set tempGames at the generated id to a empty json object
+					tempGames[thisId] = {};
 
-				//Set the socket id for a game to p1
-				tempGames[thisId][socket.id] = "p1";
+					//Set the socket id for a game to p1
+					tempGames[thisId][socket.id] = "p1";
 
-				//Setup the p1 player
-				tempGames[thisId].p1 = {
-					"socketId" : socket.id,
-					"myTurn" : false,
+					//Setup the p1 player
+					tempGames[thisId].p1 = {
+						"socketId" : socket.id,
+		 				"myTurn" : false,
+					}
+
+					//Add the user to the userToGame object
+					userToGame[socket.id] = thisId;
+					console.log(tempGames)
+
+					//Tell the client that the game code hs been generated and accepted
+					socket.emit(`recvGameCode`, thisId, type, true);
 				}
-
-				//Add the user to the userToGame object
-				userToGame[socket.id] = thisId;
-				console.log(tempGames)
-
-				//Tell the client that the game code hs been generated and accepted
-				socket.emit(`recvGameCode`, thisId, type, true);
 			}
 		}
+	});
+
+	socket.on(`myIdIs`, (playersId) => {
+		if (!doesIdExist(playersId)) socket.emit("invalidCode");
 	});
 });
 
@@ -195,7 +203,18 @@ function sendDataToBoth(name, data, socket, id) {
 	socket.to(games[id][(games[id][socket] == "p1" ? "p2" : "p1")].socketId).emit(name, data);
 }
 
-const otherPlayer = (socket, id, gameScope) => {
+//Return the other players socket id
+function otherPlayer(socket, id, gameScope) {
 	if (gameScope == 0) return tempGames[id][(games[id][socket] == "p1" ? "p2" : "p1")].socketId;
 	else return games[id][(games[id][socket] == "p1" ? "p2" : "p1")].socketId;
+}
+
+//Check if some text contains and profane words if so return true otherwise return false
+function isProfane(text) {
+	return Object.keys(p.getWordCounts(text)).length == 0 ? false : true;
+}
+
+//Check if a game id exists
+function doesIdExist(id) {
+	return (games.hasOwnProperty(id) || tempGames.hasOwnProperty(id));
 }

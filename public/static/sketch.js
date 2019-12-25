@@ -25,8 +25,8 @@ var isHidden = true;
 
 var canavsCreated = false;
 
-//Set gameData.board to a array with 9 items of value undefiend
-gameData.board = Array.apply(null, Array(9)).map(function (x, i) { return; });
+//Set gameData.board to a array with 9 items of value undefined
+gameData.board = Array.apply(null, Array(9)).map(function (x, i) { return null; });
 
 function draw() {
   //Once the canvas has been created p5js calls draw so I just set canavs created to true the first time through draw
@@ -37,9 +37,13 @@ function draw() {
     //Set the background to 220 red,green,blue which is a nice gray color
     background(220);
 
-    //If canvasState is 0 meaning we want to show the game board then draw the game board
+    //If canvasState is 0 meaning we want to show the game board then draw the game board and change otehr info
     if (!gameData.waiting) {
+      //Draw the grid
       drawGrid();
+
+      //Draw marks where they are needed
+      drawMarks();
     }else { //If we are waiting for the other player to join then show a waiting message
       //Set the textSize to 50
      // textSize(45);
@@ -79,7 +83,22 @@ function draw() {
 }
 
 function canvasClicked() {
-  console.log("clicked canavs")
+  if (!gameData.waiting && gameData.myTurn) {
+    //First Row
+    if (mouseX > 0 && mouseX < 133 && mouseY > 0 && mouseY < 133 && gameData.board[0] == undefined) addMarkToList(0, gameData.myMark);
+    if (mouseX > 133 && mouseX < 266 && mouseY > 0 && mouseY < 133 && gameData.board[1] == undefined) addMarkToList(1, gameData.myMark);
+    if (mouseX > 266 && mouseX < 400 && mouseY > 0 && mouseY < 133 && gameData.board[2] == undefined) addMarkToList(2, gameData.myMark);
+
+    //Second Row
+    if (mouseX > 0 && mouseX < 133 && mouseY > 133 && mouseY < 266 && gameData.board[3] == undefined) addMarkToList(3, gameData.myMark);
+    if (mouseX > 133 && mouseX < 266 && mouseY > 133 && mouseY < 266 && gameData.board[4] == undefined) addMarkToList(4, gameData.myMark);
+    if (mouseX > 266 && mouseX < 400 && mouseY > 133 && mouseY < 266 && gameData.board[5] == undefined) addMarkToList(5, gameData.myMark);
+
+    //Third Row
+    if (mouseX > 0 && mouseX < 133 && mouseY > 266 && mouseY < 400 && gameData.board[6] == undefined) addMarkToList(6, gameData.myMark);
+    if (mouseX > 133 && mouseX < 266 && mouseY > 266 && mouseY < 400 && gameData.board[7] == undefined) addMarkToList(7, gameData.myMark);
+    if (mouseX > 266 && mouseX < 400 && mouseY > 266 && mouseY < 400 && gameData.board[8] == undefined) addMarkToList(8, gameData.myMark);
+  }
 }
 
 //Define the drawGrid function
@@ -127,21 +146,21 @@ function drawMark(loc, mark) {
     line(5, 5, 123, 123);
     line(5, 123, 123, 5);
   }else if (loc == 1 && mark == 0) {
-    line(143, 5, 257, 123);
-    line(257, 5, 143, 123);
+    line(143, 5, 256, 123);
+    line(256, 5, 143, 123);
   }else if (loc == 2 && mark == 0) {
     line(277, 5, 395, 123);
     line(395, 5, 277, 123);
   //Second Row
   }else if (loc == 3 && mark == 0) {
-    line(5, 143, 123, 257);
-    line(123, 143, 5, 257);
+    line(5, 143, 123, 256);
+    line(123, 143, 5, 256);
   }else if (loc == 4 && mark == 0) {
-    line(143, 143, 257, 257);
-    line(257, 143, 143, 257);
+    line(143, 143, 257, 256);
+    line(257, 143, 143, 256);
   }else if (loc == 5 && mark == 0) {
-    line(277, 143, 395, 257);
-    line(395, 143, 277, 257);
+    line(277, 143, 395, 256);
+    line(395, 143, 277, 256);
   //Third Row
   }else if (loc == 6 && mark == 0) {
     line(5, 277, 123, 395);
@@ -192,6 +211,21 @@ function drawMark(loc, mark) {
   }else if (loc == 8 && mark == 1) {
     circle(336, 336, 90);
   }
+}
+
+function drawMarks() {
+  //Set board to gameData.board for convenience
+  var board = gameData.board;
+
+  //Loop through all of the spots in the board
+  for (var i = 0; i < board.length; i++) {
+    //If board[i] is null that m eans it's blank otherwsie draw a mark at the location we want with the mark we want
+    if (board[i] != null) drawMark(i, board[i]);
+  }
+}
+
+function addMarkToList(loc, markType) {
+  gameData.board[loc] = markType;
 }
 
 function gameTypePick(type) {
