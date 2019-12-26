@@ -209,7 +209,7 @@ function otherPlayer(socket, id, gameScope) {
 	else return games[id][(games[id][socket] == "p1" ? "p2" : "p1")].socketId;
 }
 
-//Check if some text contains and profane words if so return true otherwise return false
+//Check if some text contains any numebr of profane words if so return true otherwise return false
 function isProfane(text) {
 	return Object.keys(p.getWordCounts(text)).length == 0 ? false : true;
 }

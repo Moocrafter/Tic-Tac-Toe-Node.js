@@ -44,6 +44,8 @@ function draw() {
 
       //Draw marks where they are needed
       drawMarks();
+
+      if (gameData.myTurn)
     }else { //If we are waiting for the other player to join then show a waiting message
       //Set the textSize to 50
      // textSize(45);
