@@ -45,7 +45,7 @@ function draw() {
       //Draw marks where they are needed
       drawMarks();
 
-      if (gameData.myTurn)
+      //if (gameData.myTurn)
     }else { //If we are waiting for the other player to join then show a waiting message
       //Set the textSize to 50
      // textSize(45);
@@ -227,7 +227,9 @@ function drawMarks() {
 }
 
 function addMarkToList(loc, markType) {
+  gameData.myTurn = !gameData.myTurn;
   gameData.board[loc] = markType;
+  document.getElementById("turns").innerHTML = `Current Turn: ${gameData.myTurn ? "You" : "Opponent"}`;
 }
 
 function gameTypePick(type) {
@@ -240,11 +242,23 @@ function gameTypePick(type) {
   }
 }
 
+//Runs when we have gotten the game code
 function gotGameCode(gameCode, type, showCopied) {
+  //Log the game code and what game mode they are playing in
   console.log(`Game Code: ${gameCode}\nType: ${type == 1 ? `Friend` : `Random`}`);
+
+  //Set the game id in game data
   gameData.gameId = gameCode;
+
+  //Set isHidden to false to make the canvas start drawing
   isHidden = false;
+
+  //Set gameData.waiting so the canvas knows to show the waiting text
   gameData.waiting = true;
+
+  //Show the copy button
   document.getElementById("copiedParent").style.display = (showCopied ? "" : "none");
+
+  //Show the canvas
   document.getElementById("gameCanvas").style.display = ``;
 }

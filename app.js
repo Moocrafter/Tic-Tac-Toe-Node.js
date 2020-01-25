@@ -3,13 +3,14 @@ var app = require('express')();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var serveStatic = require('serve-static')
+let ejs = require('ejs'),
 var Profane = require('profane');
 var p = new Profane();
 const port = 3000
 
-var games = {}
-var tempGames = {}
-var userToGame = {}
+var games = {};
+var tempGames = {};
+var userToGame = {};
 
 //GET / and send it to the user
 app.get('/', (req, res) => {
@@ -85,10 +86,8 @@ io.on('connection', (socket) => {
 			//Send the origanal random number to p1
 			socket.to(otherPlayer(socket, thisId, 1)).emit("startPlayerData", workingGame.currentTurn);
 
-			if (workingGame.currentTurn == 0) {
-				workingGame.p1.myTurn = true;
-				workingGame.p2.myTurn = false;
-			}
+			workingGame.p1.myTurn = (workingGame.currentTurn == 0 ? true : false);
+			workingGame.p2.myTurn = (workingGame.currentTurn == 1 ? true : false);
 		}
 	}
 
