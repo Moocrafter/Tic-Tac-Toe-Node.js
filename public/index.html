@@ -26,12 +26,12 @@
 		});
 
 		//On recvGameCode call the gotGameCode function
-		socket.on(`recvGameCode`, (gameCode, type, showCopied) => {
+		socket.on('recvGameCode', (gameCode, type, showCopied) => {
 			if (type == 1) gotGameCode(gameCode, type, showCopied);
 		});
 
 		//When the server notifies us about the other player joining the game this function run
-		socket.on(`otherJoined`, () => {
+		socket.on('otherJoined', () => {
 			//Hide the url copy button
 			document.getElementById(`copiedParent`).style.display = `none`;
 
@@ -43,25 +43,29 @@
 		});
 
 		//When the server gives us the necessary data for knowing whose turn it is set myMArk and set whose turn it is
-		socket.on(`startPlayerData`, (startPlayerData) => {
+		socket.on('startPlayerData', (startPlayerData) => {
 			gameData.myMark = startPlayerData;
 			if (startPlayerData == 0) gameData.myTurn = true;
 			document.getElementById("turns").innerHTML = `Current Turn: ${startPlayerData == 0 ? "You" : "Opponent"}`
 		});
 
 		//When the other player leaves the game
-		socket.on(`otherPlayerLeft`, () => {
+		socket.on('otherPlayerLeft', () => {
 			//Show the "other player left" overlay
 			otherLeft.open();	
 		});
 
 		//Show the invalid code overlay when the server says to
-		socket.on(`invalidCode`, () => {
+		socket.on('invalidCode', () => {
 			//If this check is true we know the overlay is not showing so show it because invalidCode wouldn't be undefined
 			if (invalidCode == undefined) {
 				//Show the invalid code overlay
 				invalidCode = new InvalidCode();
 			}
+		});
+
+		socket.on('otherMadeMark', (loc) => {
+			addMarkToList(loc, (gameData.myMark == 0 ? 1 : 0), false)
 		});
 	</script>
 
@@ -113,8 +117,8 @@
 
 		.overlay {
 			position: fixed; /* Sit on top of the page content */
-			width: 60%; /* Full width (cover the whole page) */
-			height: 25%; /* Full height (cover the whole page) */
+			width: 60%;
+			height: 25%;
 			/*top: 0;
 			left: 25%;
 			right: 0;
@@ -122,11 +126,12 @@
 			/*-62.80446549391069vh
 			-464.5px*/
 			transform: translate(20vw, -61.36063408190224vh);
-			background-color: rgb(255,255,255);
+			background-color: white;
 			border-style: solid;
 			border-color: gray;
 			z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
 			cursor: pointer; /* Add a pointer on hover */
+			word-wrap: break-word;
 		}
 
 		.overlayText {
@@ -135,6 +140,9 @@
 			left: 50%;
 			transform: translate(-50%,-50%);
 			-ms-transform: translate(-50%,-50%);
+			font-size: 6.549707602339182vw;
+			width: inherit;
+			line-height: 1em;
 		}
 
 		.close {

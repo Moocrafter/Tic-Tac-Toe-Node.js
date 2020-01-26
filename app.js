@@ -121,7 +121,7 @@ io.on('connection', (socket) => {
 				//Delete the game
 				delete games[thisId];
 			}else {
-				//If there are more than two players in a tempGame than send a disconnect messgae
+				//If there are more than two players in a tempGame than send a disconnect message
 				if (Object.keys(tempGames[thisId]).length > 2) socket.to(tempGames[thisId][(tempGames[thisId][playerSocketId] == "p1" ? "p2" : "p1")].socketId).emit(`otherPlayerLeft`, ``);
 			
 				//Remove the other player from the userToGame object from the context of tempGames
@@ -202,6 +202,8 @@ io.on('connection', (socket) => {
 			//Change the var myTurn of both players so basically switch who can place a marker
 			thisGame[currentTurn].myTurn = !thisGame[currentTurn].myTurn;
 			thisGame[(currentTurn == "p1" ? "p2" : "p1")].myTurn = !thisGame[(currentTurn == "p1" ? "p2" : "p1")].myTurn;
+
+			socket.to(otherPlayer(socket, gameId, 1)).emit("otherMadeMark", loc);
 		}
 	});
 
@@ -234,11 +236,11 @@ function sendDataToBoth(name, data, socket, id) {
 
 //Return the other players socket id
 function otherPlayer(socket, id, gameScope) {
-	if (gameScope == 0) return tempGames[id][(games[id][socket] == "p1" ? "p2" : "p1")].socketId;
-	else return games[id][(games[id][socket] == "p1" ? "p2" : "p1")].socketId;
+	if (gameScope == 0) return tempGames[id][(tempGames[id][socket.id] == "p1" ? "p2" : "p1")].socketId;
+	else return games[id][(games[id][socket.id] == "p1" ? "p2" : "p1")].socketId;
 }
 
-//Check if some text contains any numebr of profane words if so return true otherwise return false
+//Check if some text contains any number of profane words if so return true otherwise return false
 function isProfane(text) {
 	return Object.keys(p.getWordCounts(text)).length == 0 ? false : true;
 }

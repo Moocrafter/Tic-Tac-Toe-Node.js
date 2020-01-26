@@ -47,9 +47,9 @@ function resize() {
     }else {
       //LANDSCAPE
       /*if (Math.round((windowWidth * windowHeight) / 2691.5555555555557) - (windowWidth * windowHeight) / 2691.5555555555557 == 0) {
-        var canavsSize  = (windowWidth * windowHeight) / 2691.5555555555557;
+        var canvasSize  = (windowWidth * windowHeight) / 2691.5555555555557;
       }else {
-        var canavsSize = (windowWidth * windowHeight) / 1977.6625;
+        var canvasSize = (windowWidth * windowHeight) / 1977.6625;
       }*/
 
       //Get the clients height
@@ -58,7 +58,7 @@ function resize() {
       //Get the size we think the canvas should be
       var toBeSize = clientHeight - (clientHeight / 3);
 
-      //If the size we think the canavs should be is greater than the window width than set the canavs size to the window width
+      //If the size we think the canvas should be is greater than the window width than set the canvas size to the window width
       if (toBeSize > windowWidth) toBeSize = windowWidth;
 
       //Set the canvas size
@@ -129,7 +129,7 @@ function fadeCopiedFunc() {
   }, 1500);
 }
 
-if (isiOS) document.getElementsByTagName("body")[0].syle.position = "fixed";
+if (isiOS) document.getElementsByTagName("body")[0].style.position = "fixed";
 
 //-------Overlay Handling Parts-------
 
@@ -162,7 +162,7 @@ function InvalidCode() {
     //Hide the overlay
     invalidOverlay.style.display = "none";
 
-    //If the game canavs is showing then hide it and remove special styling
+    //If the game canvas is showing then hide it and remove special styling
     if (!isHidden) {
       //Set isHidden to true so the code wont waste time drawing
       isHidden = true;

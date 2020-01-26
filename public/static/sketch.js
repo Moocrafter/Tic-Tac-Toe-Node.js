@@ -1,8 +1,8 @@
 function setup() {
-  //Create the canvas and set my canavs to the canvas
+  //Create the canvas and set my canvas to the canvas
   let mycanvas = createCanvas(400, 400);
 
-  //Put our canavs into a div with the id of gameCanvas
+  //Put our canvas into a div with the id of gameCanvas
   mycanvas.parent(`gameCanvas`);
 
   //Attach listener for activity on canvas only
@@ -23,14 +23,14 @@ var gameData = {
 //Define isHidden as true so the draw function doesn't draw when we can't see the canvas
 var isHidden = true;
 
-var canavsCreated = false;
+var canvasCreated = false;
 
 //Set gameData.board to a array with 9 items of value undefined
 gameData.board = Array.apply(null, Array(9)).map(function (x, i) { return null; });
 
 function draw() {
   //Once the canvas has been created p5js calls draw so I just set canvas created to true the first time through draw
-  if (!canavsCreated) {canavsCreated = true;resize();}
+  if (!canvasCreated) {canvasCreated = true;resize();}
 
   //If isHidden is true meaning the canvas shouldn't be showing then don't draw to the canvas
   if (!isHidden) {
