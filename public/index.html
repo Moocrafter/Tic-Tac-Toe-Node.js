@@ -52,7 +52,7 @@
 		//When the other player leaves the game
 		socket.on(`otherPlayerLeft`, () => {
 			//Show the "other player left" overlay
-			otherLeft.open();		
+			otherLeft.open();	
 		});
 
 		//Show the invalid code overlay when the server says to
@@ -200,7 +200,7 @@
 	</div>
 	<div id="copiedParent" class="noselect" style="display: none;">
 		<br>
-		<button onclick="copyToClipboard(`http://localhost:3000/${gameData.gameId}`); fadeCopiedFunc()">Copy Share URL</button>
+		<button onclick="copyToClipboard(`http:\/\/localhost:3000/${gameData.gameId}`); fadeCopiedFunc()">Copy Share URL</button>
 		<br>
 		<div id="copiedMessage" style="display: none; opacity: 0.0984771;">Copied</div>
 	</div>

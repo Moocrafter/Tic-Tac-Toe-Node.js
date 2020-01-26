@@ -12,13 +12,13 @@ function setup() {
   strokeWeight(10);
 }
 
-//Set the gameData to the staring postion
+//Set the gameData to the staring position
 var gameData = {
   "waiting" : false,
   "gameId" : "",
   "myMark" : null,
   "myTurn" : false,
-}
+};
 
 //Define isHidden as true so the draw function doesn't draw when we can't see the canvas
 var isHidden = true;
@@ -29,7 +29,7 @@ var canavsCreated = false;
 gameData.board = Array.apply(null, Array(9)).map(function (x, i) { return null; });
 
 function draw() {
-  //Once the canvas has been created p5js calls draw so I just set canavs created to true the first time through draw
+  //Once the canvas has been created p5js calls draw so I just set canvas created to true the first time through draw
   if (!canavsCreated) {canavsCreated = true;resize();}
 
   //If isHidden is true meaning the canvas shouldn't be showing then don't draw to the canvas
@@ -37,7 +37,7 @@ function draw() {
     //Set the background to 220 red,green,blue which is a nice gray color
     background(220);
 
-    //If canvasState is 0 meaning we want to show the game board then draw the game board and change otehr info
+    //If canvasState is 0 meaning we want to show the game board then draw the game board and change other info
     if (!gameData.waiting) {
       //Draw the grid
       drawGrid();
@@ -79,7 +79,7 @@ function draw() {
       textSize(25);
 
       //Show the text
-      text(`Have a friend go to\nlocalhost:3000/${gameData.gameId}`, 11.5/*-80*/, /*45*/30)
+      text(`Have a friend go to\nlocalhost:3000/${gameData.gameId}`, 11.5/*-80*/, /*45*/30);
     }
   }
 }
@@ -87,19 +87,19 @@ function draw() {
 function canvasClicked() {
   if (!gameData.waiting && gameData.myTurn) {
     //First Row
-    if (mouseX > 0 && mouseX < 133 && mouseY > 0 && mouseY < 133 && gameData.board[0] == undefined) addMarkToList(0, gameData.myMark);
-    if (mouseX > 133 && mouseX < 266 && mouseY > 0 && mouseY < 133 && gameData.board[1] == undefined) addMarkToList(1, gameData.myMark);
-    if (mouseX > 266 && mouseX < 400 && mouseY > 0 && mouseY < 133 && gameData.board[2] == undefined) addMarkToList(2, gameData.myMark);
+    if (mouseX > 0 && mouseX < 133 && mouseY > 0 && mouseY < 133 && gameData.board[0] == null) addMarkToList(0, gameData.myMark, true);
+    if (mouseX > 133 && mouseX < 266 && mouseY > 0 && mouseY < 133 && gameData.board[1] == null) addMarkToList(1, gameData.myMark, true);
+    if (mouseX > 266 && mouseX < 400 && mouseY > 0 && mouseY < 133 && gameData.board[2] == null) addMarkToList(2, gameData.myMark, true);
 
     //Second Row
-    if (mouseX > 0 && mouseX < 133 && mouseY > 133 && mouseY < 266 && gameData.board[3] == undefined) addMarkToList(3, gameData.myMark);
-    if (mouseX > 133 && mouseX < 266 && mouseY > 133 && mouseY < 266 && gameData.board[4] == undefined) addMarkToList(4, gameData.myMark);
-    if (mouseX > 266 && mouseX < 400 && mouseY > 133 && mouseY < 266 && gameData.board[5] == undefined) addMarkToList(5, gameData.myMark);
+    if (mouseX > 0 && mouseX < 133 && mouseY > 133 && mouseY < 266 && gameData.board[3] == null) addMarkToList(3, gameData.myMark, true);
+    if (mouseX > 133 && mouseX < 266 && mouseY > 133 && mouseY < 266 && gameData.board[4] == null) addMarkToList(4, gameData.myMark, true);
+    if (mouseX > 266 && mouseX < 400 && mouseY > 133 && mouseY < 266 && gameData.board[5] == null) addMarkToList(5, gameData.myMark, true);
 
     //Third Row
-    if (mouseX > 0 && mouseX < 133 && mouseY > 266 && mouseY < 400 && gameData.board[6] == undefined) addMarkToList(6, gameData.myMark);
-    if (mouseX > 133 && mouseX < 266 && mouseY > 266 && mouseY < 400 && gameData.board[7] == undefined) addMarkToList(7, gameData.myMark);
-    if (mouseX > 266 && mouseX < 400 && mouseY > 266 && mouseY < 400 && gameData.board[8] == undefined) addMarkToList(8, gameData.myMark);
+    if (mouseX > 0 && mouseX < 133 && mouseY > 266 && mouseY < 400 && gameData.board[6] == null) addMarkToList(6, gameData.myMark, true);
+    if (mouseX > 133 && mouseX < 266 && mouseY > 266 && mouseY < 400 && gameData.board[7] == null) addMarkToList(7, gameData.myMark, true);
+    if (mouseX > 266 && mouseX < 400 && mouseY > 266 && mouseY < 400 && gameData.board[8] == null) addMarkToList(8, gameData.myMark, true);
   }
 }
 
@@ -184,7 +184,7 @@ function drawMark(loc, mark) {
     return;
   }
   
-  //If mark is 0 meaning we have just drawen a X then set the stroke color to black and end the function
+  //If mark is 0 meaning we have just drawn a X then set the stroke color to black and end the function
   //Turn off the fill
   noFill();
 
@@ -221,15 +221,26 @@ function drawMarks() {
 
   //Loop through all of the spots in the board
   for (var i = 0; i < board.length; i++) {
-    //If board[i] is null that m eans it's blank otherwsie draw a mark at the location we want with the mark we want
+    //If board[i] is null that means it's blank otherwise draw a mark at the location we want with the mark we want
     if (board[i] != null) drawMark(i, board[i]);
   }
 }
 
-function addMarkToList(loc, markType) {
+function addMarkToList(loc, markType, fromClient) {
+  //Change the turn gameData
   gameData.myTurn = !gameData.myTurn;
+
+  //Add the mark to the board
   gameData.board[loc] = markType;
+
+  //Change the turn
   document.getElementById("turns").innerHTML = `Current Turn: ${gameData.myTurn ? "You" : "Opponent"}`;
+
+  //Check if the player is the one who placed the mark
+  if (fromClient) {
+    //Tell the server that the current player made a mark
+    socket.emit("placedMark", loc);
+  }
 }
 
 function gameTypePick(type) {
