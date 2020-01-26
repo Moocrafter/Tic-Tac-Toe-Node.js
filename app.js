@@ -84,7 +84,8 @@ io.on('connection', (socket) => {
 
 			//Send the original random number to p1
 			socket.to(otherPlayer(socket, thisId, 1)).emit("startPlayerData", workingGame.currentTurn);
-
+			
+			//Set the myTurn option of both player 1 and player 2
 			workingGame.p1.myTurn = (workingGame.currentTurn == 0 ? true : false);
 			workingGame.p2.myTurn = (workingGame.currentTurn == 1 ? true : false);
 		}
@@ -96,6 +97,7 @@ io.on('connection', (socket) => {
 
 		//If a player is starting a game or is in a game and disconnects then notify the other player and remove the game
 		console.log(`This socket id: ${socket.id}\nuserToGame: ${JSON.stringify(userToGame)}`);
+		
 		//If the user is part of a game or tempGame then notify the other player
 		if (userToGame.hasOwnProperty(socket.id)) {
 			//Define the playerSocketId var because after a while we lose the players socket id
@@ -117,7 +119,10 @@ io.on('connection', (socket) => {
 				
 				//Remove the other player from the userToGame object from the context of games
 				delete userToGame[games[thisId][(games[thisId][playerSocketId] == "p1" ? "p2" : "p1")].socketId];
+				
+				//Log info about the user who disconnected
 				console.log(`This socket id: ${playerSocketId}\nSocket id removed: ${JSON.stringify(games[thisId][(games[thisId][playerSocketId] == "p1" ? "p2" : "p1")])}`);
+				
 				//Delete the game
 				delete games[thisId];
 			}else {
@@ -137,7 +142,7 @@ io.on('connection', (socket) => {
 	});
 
 	//When a user wants to get a new game code generate one and set up a temp game
-	socket.on(`getGameCode`, (type) => {
+	socket.on('getGameCode', (type) => {
 		//Set doesExist to true
 		var doesExist = true;
 
@@ -148,8 +153,9 @@ io.on('connection', (socket) => {
 
 			//Check if the game code generated contains profane words if so skip that game code
 			if (!isProfane(thisId)) {
-				//If the game code generated hasn't been used than set doesExist to false
+				//If the game code generated hasn't been used and isn't profane then we continue
 				if (!doesIdExist(thisId)) {
+					//We set doesExist to false because we have found a game id that doesn't exist
 					doesExist = false;
 
 					//Set tempGames at the generated id to a empty json object
@@ -163,12 +169,12 @@ io.on('connection', (socket) => {
 						"socketId" : socket.id,
 		 				"myTurn" : false,
 					};
-
+					
+					//Create an empty board
 					tempGames[thisId].board = Array.apply(null, Array(9)).map(function (x, i) { return null; });
 
 					//Add the user to the userToGame object
 					userToGame[socket.id] = thisId;
-					console.log(tempGames);
 
 					//Tell the client that the game code hs been generated and accepted
 					socket.emit(`recvGameCode`, thisId, type, true);
