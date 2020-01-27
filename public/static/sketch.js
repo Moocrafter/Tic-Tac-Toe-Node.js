@@ -78,6 +78,9 @@ function draw() {
       //Set the text size
       textSize(25);
 
+      //Set the text color
+      fill(0);
+
       //Show the text
       text(`Have a friend go to\nlocalhost:3000/${gameData.gameId}`, 11.5/*-80*/, /*45*/30);
     }
