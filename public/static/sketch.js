@@ -223,11 +223,11 @@ function checkForWinner() {
   for (var i = 0; i < 3; i++) {
     var thisRow = [];
     for (var k = 0; k < 3; k++) {
-      if (gameData.board[(i * 3) + k] == null) {console.log(gameData.board[(i * 3) + k]); k = 4; continue;};
+      if (gameData.board[(i * 3) + k] == null) {console.log(gameData.board[(i * 3) + k]); k = 4; continue;}
       thisRow[i + k] = gameData.board[(i * 3) + k];
     }
     if (k == 4) {
-      console.log(thisRow)
+      console.log(thisRow);
       thisRow = [];
     }else {
       console.log(`Row ${i} ${thisRow}`);
