@@ -247,11 +247,11 @@ function drawMarks() {
   }
 }
 
-function addMarkToList(loc, markType, fromClient) {
-  //Change the turn gameData
+function addMarkToList(loc, markType, fromServ) {
+  //Change the turn once a mark is placed by either the current player or the server
   gameData.myTurn = !gameData.myTurn;
 
-  //Add the mark to the board
+  //Add the mark of either player to the game board
   gameData.board[loc] = markType;
 
   //Change the turn
