@@ -13,9 +13,9 @@ var isiOS = function() {
 
   //If the browser supports the navigator.platform or its set then continue
   if (!!navigator.platform) {
-    //Loop through all the devcies in the iDevices array
+    //Loop through all the devices in the iDevices array
     while (iDevices.length) {
-      //If the navigator.platfom is the platform that was just popped of the list then return true
+      //If the navigator.platform is the platform that was just popped of the list then return true
       if (navigator.platform === iDevices.pop()) return true;
     }
   }
@@ -26,7 +26,7 @@ var isiOS = function() {
 
 //Define the resize function
 function resize() {
-  //Wait until the canavs appears
+  //Wait until the canvas appears
   if (document.getElementById("gameCanvas") == null) return false;
 
   var done = false;
@@ -37,31 +37,31 @@ function resize() {
   //Wait 100 milliseconds to allow ios devices to rotate
   setTimeout(function() {
     if (window.height > window.width) {
-      //PORTIART
+      //PORTRAIT
       canvas.style.width = `${window.width - (window.width / 18)}px`;
       canvas.style.height = `${window.width - (window.width / 18)}px`;
 
       //Scale the player choose div in the X direction
-      var playerChoose = document.getElementByClassName(`playerChoose`)
-      playerChoose.style.transform = `scaleX(${(window.width * window.height) / 342866.6666666667})`
+      var playerChoose = document.getElementByClassName(`playerChoose`);
+      playerChoose.style.transform = `scaleX(${(window.width * window.height) / 342866.6666666667})`;
     }else {
       //LANDSCAPE
       /*if (Math.round((windowWidth * windowHeight) / 2691.5555555555557) - (windowWidth * windowHeight) / 2691.5555555555557 == 0) {
-        var canavsSize  = (windowWidth * windowHeight) / 2691.5555555555557;
+        var canvasSize  = (windowWidth * windowHeight) / 2691.5555555555557;
       }else {
-        var canavsSize = (windowWidth * windowHeight) / 1977.6625;
+        var canvasSize = (windowWidth * windowHeight) / 1977.6625;
       }*/
 
       //Get the clients height
-      var clientHeight = document.documentElement.clientHeight
+      var clientHeight = document.documentElement.clientHeight;
 
-      //Get the size we think the canavs should be
+      //Get the size we think the canvas should be
       var toBeSize = clientHeight - (clientHeight / 3);
 
-      //If the size we think the canavs should be is greater than the window width than set the canavs size to the window width
+      //If the size we think the canvas should be is greater than the window width than set the canvas size to the window width
       if (toBeSize > windowWidth) toBeSize = windowWidth;
 
-      //Set the canavs size
+      //Set the canvas size
       canvas.style.width = `${toBeSize}px`;
       canvas.style.height = `${toBeSize}px`;
     }
@@ -80,7 +80,7 @@ function startWithId(gameCode, showCopied) {
   document.getElementById(`gameTypePick`).style.display = `none`;
 
   //When we have the game code do all kinds of things with that
-  gotGameCode(gameCode, 1, showCopied)
+  gotGameCode(gameCode, 1, showCopied);
 
   //Show the extra data
   document.getElementById(`extraData`).style.display = ``;
@@ -129,7 +129,7 @@ function fadeCopiedFunc() {
   }, 1500);
 }
 
-if (isiOS) document.getElementsByTagName("body")[0].syle.position = "fixed"
+if (isiOS) document.getElementsByTagName("body")[0].style.position = "fixed";
 
 //-------Overlay Handling Parts-------
 
@@ -162,9 +162,9 @@ function InvalidCode() {
     //Hide the overlay
     invalidOverlay.style.display = "none";
 
-    //If the game canavs is showing then hide it and remove special styling
+    //If the game canvas is showing then hide it and remove special styling
     if (!isHidden) {
-      //Set isHidden to true so tthe code wont waste time drawing
+      //Set isHidden to true so the code wont waste time drawing
       isHidden = true;
 
       //Hide the canvas
@@ -179,7 +179,7 @@ function InvalidCode() {
       //Resize the game type pick buttons
       buttonResize();
 
-      //Remove postion and top styling
+      //Remove position and top styling
       invalidOverlay.style.position = "";
       invalidOverlay.style.top = "";
     }
@@ -193,7 +193,7 @@ function OtherLeft() {
 
   //Handles closing events
   this.close = () => {
-    //this.isShowing to fasle so when we click the window it doesn't try to close the already closed overlay
+    //this.isShowing to false so when we click the window it doesn't try to close the already closed overlay
     this.isShowing = false;
 
     //Hide the overlay
@@ -211,15 +211,15 @@ function OtherLeft() {
     //Resize the game type pick buttons
     buttonResize();
 
-    //Set isHiden to true to hide the canvas
+    //Set isHidden to true to hide the canvas
     isHidden = true;
 
-    //Set waiting to true becasue the next time we see the canvas it will be waiting
+    //Set waiting to true because the next time we see the canvas it will be waiting
     gameData.waiting = true;
 
     //Set gameData.board to a array with 9 items of value undefined
-   // gameData.board = Array.apply(null, Array(9)).map(function (x, i) { return null; });
-  }
+    gameData.board = Array.apply(null, Array(9)).map(function (x, i) { return null; });
+  };
 
   //Handles opening events
   this.open = () => {
@@ -231,7 +231,7 @@ function OtherLeft() {
 
     //Change the url to remove the game code even if there isn't one it doesn't really matter
     history.replaceState("", "Moocraft's Tic-Tac-Toe", "http://localhost:3000");
-  }
+  };
 }
 
 //Create a OtherLeft object
@@ -244,7 +244,7 @@ window.onclick = () => {
 
   //Check if the overlay is showing if so close it and move to home screen
   if (otherLeft.isShowing) otherLeft.close(); //Close the overlay and hide lots of other things
-}
+};
 
 //Cross browser copy to clipboard function
 function copyToClipboard(text) {
@@ -253,11 +253,11 @@ function copyToClipboard(text) {
   } else if (window.clipboardData) { // IE
     window.clipboardData.setData('text', text);
   } else { // other browsers, iOS, Mac OS
-    var dummy = document.createElement("textarea"); // to avoid breaking orgain page when copying more words
+    var dummy = document.createElement("textarea"); // to avoid breaking origin page when copying more words
     // cant copy when adding below this code
-     dummy.style.display = 'none'
+     dummy.style.display = 'none';
 
-    document.body.appendChild(dummy); //Be careful if you use texarea. setAttribute('value', value), which works with "input" does not work with "textarea". – Eduard
+    document.body.appendChild(dummy); //Be careful if you use textarea. setAttribute('value', value), which works with "input" does not work with "textarea". – Eduard
 
     dummy.value = text;
     dummy.select();
