@@ -177,6 +177,7 @@ io.on('connection', (socket) => {
 		}
 	});
 
+	//Check if a game id is valid to prevent bug || Bug desciption: the player could start a friend game. get a game id then get the url then in the same tab go to that url which would cause the game to start but with only one player actually abale to play.
 	socket.on(`myIdIs`, (playersId) => {
 		if (!doesIdExist(playersId)) socket.emit("invalidCode");
 	});

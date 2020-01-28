@@ -45,7 +45,11 @@ function draw() {
       //Draw marks where they are needed
       drawMarks();
 
-      if (gameData.myTurn)
+      if (gameData.myTurn) {
+        document.getElementById("turns").children[0].innerText = "Current Turn: You";
+      }else {
+        document.getElementById("turns").children[0].innerText = "Current Turn: Opponent";
+      }
     }else { //If we are waiting for the other player to join then show a waiting message
       //Set the textSize to 50
      // textSize(45);
@@ -226,7 +230,16 @@ function drawMarks() {
   }
 }
 
-function addMarkToList(loc, markType) {
+function addMarkToList(loc, markType, fromServ) {
+  if (!fromServ) {
+    socker.emit("markPlaced", {
+      "markType"
+    })
+  }
+  //Change the turn once a mark is placed by either the current player or the server
+  gameData.myTurn = !gameData.myTurn;
+
+  //Add the mark of either player to the game board
   gameData.board[loc] = markType;
 }
 
