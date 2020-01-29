@@ -18,6 +18,7 @@ var gameData = {
   "gameId" : "",
   "myMark" : null,
   "myTurn" : false,
+  "gameWon" : false,
 };
 
 //Define isHidden as true so the draw function doesn't draw when we can't see the canvas
@@ -88,7 +89,7 @@ function draw() {
 }
 
 function canvasClicked() {
-  if (!gameData.waiting && gameData.myTurn) {
+  if (!gameData.waiting && gameData.myTurn && !gameData.gameWon) {
     //First Row
     if (mouseX > 0 && mouseX < 133 && mouseY > 0 && mouseY < 133 && gameData.board[0] == null) addMarkToList(0, gameData.myMark, true);
     if (mouseX > 133 && mouseX < 266 && mouseY > 0 && mouseY < 133 && gameData.board[1] == null) addMarkToList(1, gameData.myMark, true);
@@ -218,21 +219,114 @@ function drawMark(loc, mark) {
   }
 }
 
+
+//Check for a winner or tie
 function checkForWinner() {
+  //Set winner to null because we don't have a valid winner yet
+  var winner = null;
+  
   //Check rows
   for (var i = 0; i < 3; i++) {
-    var thisRow = [];
-    for (var k = 0; k < 3; k++) {
-      if (gameData.board[(i * 3) + k] == null) {console.log(gameData.board[(i * 3) + k]); k = 4; continue;}
-      thisRow[i + k] = gameData.board[(i * 3) + k];
-    }
-    if (k == 4) {
-      console.log(thisRow);
-      thisRow = [];
-    }else {
-      console.log(`Row ${i} ${thisRow}`);
+    //Check if the current row is a wining row
+    if (gameData.board[0 + (i * 3)] == gameData.board[2 + (i * 3)] && gameData.board[1 + (i * 3)] == gameData.board[0 + (i * 3)]) {
+      //Set the winner
+      winner = gameData.board[0 + (i * 3)];
+
+      //Set the winning row or winRow to the current row
+      gameData.winRow = i;
+
+      //Set the winning columns or winCol to null because we are checking the rows
+      gameData.winCol = null;
+
+      //Set the winning diagonals or winDig to null because we are checking the rows
+      gameData.winDig = null;
+
+      //Break out of the loop because we have found a winner
+      break;
     }
   }
+
+  //Check columns
+  for (var i = 0; i < 3; i++) {
+    if (gameData.board[0 + i] == gameData.board[3 + i] && gameData.board[6 + i] == gameData.board[0 + i]) {
+      //Set the winner
+      winner = gameData.board[0 + i];
+
+      //Set the winning rows or winRow to null because we are checking the columns
+      gameData.winRow = null;
+
+      //Set the winning column or winCol to the current column
+      gameData.winCol = i;
+
+      //Set the winning diagonals or winDig to null because we are checking the rows
+      gameData.winDig = null;
+
+      //Break out of the loop because we have found a winner
+      break;
+    }
+  }
+  
+  //Check diagonals
+  if (gameData.board[0] == gameData.board[4] && gameData.board[8] == gameData.board[0]) {
+    //Set the winner
+    winner = gameData.board[0];
+
+    //Set the winning rows or winRow to null because we are checking the columns
+    gameData.winRow = null;
+
+    //Set the winning columns or winCol to null because we are checking the rows
+    gameData.winCol = null;
+
+    //Set the winning diagonal or winDig to the current diagonal
+    gameData.winDig = 0;
+  }else if (gameData.board[2] == gameData.board[4] && gameData.board[6] == gameData.board[2]) {
+    //Set the winner
+    winner = gameData.board[2];
+
+    //Set the winning rows or winRow to null because we are checking the columns
+    gameData.winRow = null;
+
+    //Set the winning columns or winCol to null because we are checking the rows
+    gameData.winCol = null;
+
+    //Set the winning diagonal or winDig to the current diagonal
+    gameData.winDig = 1;
+  }
+
+  //Check if their is a winner
+  if (winner != null) {
+    //Log who the winner is
+    console.log(`Winner: ${winner == 0 ? "X" : "O"}`);
+
+    //Set gameData.gameWon to true so we know the game has been won
+    gameData.gameWon = true;
+  }
+
+  //Set isTie to tue
+  var isTie = true;
+
+  //Loop though all of the positions that a mark can be placed
+  for (var i = 0; i < 9; i++) {
+    //Check if the current position is null or empty
+    if (gameData.board[i] == null) {
+      //If the current position is null that means the board is not full thus there can't be a tie
+      isTie = false;
+
+      //Break out of the loop
+      break;
+    }
+  }
+
+  //If its a tie then log that
+  if (isTie) {
+    //Log that the game is a tie
+    console.log("Tie!");
+  }
+}
+
+//Define drawWinLine which draws the win line
+function drawWinLine() {
+
 }
 
 //Draw marks on board
@@ -247,7 +341,7 @@ function drawMarks() {
   }
 }
 
-function addMarkToList(loc, markType, fromServ) {
+function addMarkToList(loc, markType, fromClient) {
   //Change the turn once a mark is placed by either the current player or the server
   gameData.myTurn = !gameData.myTurn;
 
@@ -262,6 +356,8 @@ function addMarkToList(loc, markType, fromServ) {
     //Tell the server that the current player made a mark
     socket.emit("placedMark", loc);
   }
+
+  checkForWinner();
 }
 
 function gameTypePick(type) {
