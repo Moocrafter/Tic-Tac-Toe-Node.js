@@ -333,11 +333,12 @@ function checkForWinner() {
 function drawWinLine() {
   var winRow = gameData.winRow;
   var winner = gameData.winner;
-  //stroke((winner == 0 ? 255 : 0), (winner == 0 ? 0 : 128), 0);
-  stroke(0, 128, 0);
+  stroke((winner == 0 ? 255 : 0), (winner == 0 ? 0 : 128), 0);
   if (winRow != null) {
     if (winRow == 0) {
        line(0, 64, 400, 64);
+    }else if (winRow == 1) {
+      line(0, 200, 400, 200);
     }
   }
 }
