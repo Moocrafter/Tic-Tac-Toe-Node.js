@@ -18,12 +18,13 @@ var gameData = {
   "gameId" : "",
   "myMark" : null,
   "myTurn" : false,
-  "gameWon" : false,
+  "winner" : null,
 };
 
 //Define isHidden as true so the draw function doesn't draw when we can't see the canvas
 var isHidden = true;
 
+//Set canvasCreated to false so we know the canvas has not been created
 var canvasCreated = false;
 
 //Set gameData.board to a array with 9 items of value undefined
@@ -46,7 +47,11 @@ function draw() {
       //Draw marks where they are needed
       drawMarks();
 
-      //if (gameData.myTurn)
+      //Check if there is a winner
+      if (gameData.winner != null) {
+        //Draw the win line
+        drawWinLine()
+      }
     }else { //If we are waiting for the other player to join then show a waiting message
       //Set the textSize to 50
      // textSize(45);
@@ -89,7 +94,7 @@ function draw() {
 }
 
 function canvasClicked() {
-  if (!gameData.waiting && gameData.myTurn && !gameData.gameWon) {
+  if (!gameData.waiting && gameData.myTurn) {
     //First Row
     if (mouseX > 0 && mouseX < 133 && mouseY > 0 && mouseY < 133 && gameData.board[0] == null) addMarkToList(0, gameData.myMark, true);
     if (mouseX > 133 && mouseX < 266 && mouseY > 0 && mouseY < 133 && gameData.board[1] == null) addMarkToList(1, gameData.myMark, true);
@@ -298,8 +303,8 @@ function checkForWinner() {
     //Log who the winner is
     console.log(`Winner: ${winner == 0 ? "X" : "O"}`);
 
-    //Set gameData.gameWon to true so we know the game has been won
-    gameData.gameWon = true;
+    //Set the winner in the gameData
+    gameData.winner = winner;
   }
 
   //Set isTie to tue
@@ -326,7 +331,15 @@ function checkForWinner() {
 
 //Define drawWinLine which draws the win line
 function drawWinLine() {
-
+  var winRow = gameData.winRow;
+  var winner = gameData.winner;
+  //stroke((winner == 0 ? 255 : 0), (winner == 0 ? 0 : 128), 0);
+  stroke(0, 128, 0);
+  if (winRow != null) {
+    if (winRow == 0) {
+       line(0, 64, 400, 64);
+    }
+  }
 }
 
 //Draw marks on board

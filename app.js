@@ -127,7 +127,7 @@ io.on('connection', (socket) => {
 				delete games[thisId];
 			}else {
 				//If there are more than two players in a tempGame than send a disconnect message
-				if (Object.keys(tempGames[thisId]).length > 2) socket.to(tempGames[thisId][(tempGames[thisId][playerSocketId] == "p1" ? "p2" : "p1")].socketId).emit(`otherPlayerLeft`, ``);
+				//if (Object.keys(tempGames[thisId]).length > 2) socket.to(tempGames[thisId][(tempGames[thisId][playerSocketId] == "p1" ? "p2" : "p1")].socketId).emit(`otherPlayerLeft`, ``);
 			
 				//Remove the other player from the userToGame object from the context of tempGames
 				delete userToGame[tempGames[thisId][(tempGames[thisId][playerSocketId] == "p1" ? "p2" : "p1")]];
