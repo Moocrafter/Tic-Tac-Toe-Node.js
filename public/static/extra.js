@@ -129,6 +129,7 @@ function fadeCopiedFunc() {
   }, 1500);
 }
 
+///If the client is on ios then to prevent scrolling set the position styling to fixed
 if (isiOS) document.getElementsByTagName("body")[0].style.position = "fixed";
 
 //-------Overlay Handling Parts-------
@@ -164,20 +165,8 @@ function InvalidCode() {
 
     //If the game canvas is showing then hide it and remove special styling
     if (!isHidden) {
-      //Set isHidden to true so the code wont waste time drawing
-      isHidden = true;
-
-      //Hide the canvas
-      document.getElementById("gameCanvas").style.display = "none";
-
-      //Hide the extra data
-      document.getElementById("extraData").style.display = "none";
-
-      //Show the game type pick menu
-      document.getElementById("gameTypePick").style.display = "";
-
-      //Resize the game type pick buttons
-      buttonResize();
+      //Reset the game
+      resetGame();
 
       //Remove position and top styling
       invalidOverlay.style.position = "";
@@ -199,26 +188,8 @@ function OtherLeft() {
     //Hide the overlay
     document.getElementById("otherPlayerLeftOverlay").style.display = "none";
 
-    //Hide the canvas
-    document.getElementById("gameCanvas").style.display = "none";
-
-    //Hide the extra data
-    document.getElementById("extraData").style.display = "none";
-
-    //Show the game type pick menu
-    document.getElementById("gameTypePick").style.display = "";
-
-    //Resize the game type pick buttons
-    buttonResize();
-
-    //Set isHidden to true to hide the canvas
-    isHidden = true;
-
-    //Set waiting to true because the next time we see the canvas it will be waiting
-    gameData.waiting = true;
-
-    //Set gameData.board to a array with 9 items of value undefined
-    gameData.board = Array.apply(null, Array(9)).map(function (x, i) { return null; });
+    //Reset the game
+    resetGame()
   };
 
   //Handles opening events
@@ -245,6 +216,78 @@ window.onclick = () => {
   //Check if the overlay is showing if so close it and move to home screen
   if (otherLeft.isShowing) otherLeft.close(); //Close the overlay and hide lots of other things
 };
+
+async function resetGame() {
+  //Hide the canvas
+  document.getElementById("gameCanvas").style.display = "none";
+
+  //Hide the extra data
+  document.getElementById("extraData").style.display = "none";
+
+  //Show the game type pick menu
+  document.getElementById("gameTypePick").style.display = "";
+
+  //Set the current turn element text to Current Turn: Unavailable so there is a current urn for just before we get the current turn from the server
+  document.getElementById("turns").innerHTML = "Current Turn: Unavailable";
+
+  //Resize the game type pick buttons
+  buttonResize();
+
+  //Set isHidden to true to tell the canvas not to waste time on drawing the canvas
+  isHidden = true;
+
+  //Set waiting to true because the next time we see the canvas it will be waiting
+  gameData.waiting = true;
+
+  //Set gameData.board to a array with 9 items of value undefined
+  gameData.board = Array.apply(null, Array(9)).map(function (x, i) { return null; });
+}
+
+/*window.Clipboard = (function(window, document, navigator) {
+  var textArea,
+  copy;
+  
+  function isOS() {
+  return navigator.userAgent.match(/ipad|iphone/i);
+  }
+  
+  function createTextArea(text) {
+  textArea = document.createElement('textArea');
+  textArea.value = text;
+  document.body.appendChild(textArea);
+  }
+  
+  function selectText() {
+  var range,
+  selection;
+  
+  if (isOS()) {
+  range = document.createRange();
+  range.selectNodeContents(textArea);
+  selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
+  textArea.setSelectionRange(0, 999999);
+  } else {
+  textArea.select();
+  }
+  }
+  
+  function copyToClipboard() {
+  document.execCommand('copy');
+  document.body.removeChild(textArea);
+  }
+  
+  copy = function(text) {
+  createTextArea(text);
+  selectText();
+  copyToClipboard();
+  };
+  
+  return {
+  copy: copy
+  };
+  })(window, document, navigator);*/
 
 //Cross browser copy to clipboard function
 function copyToClipboard(text) {

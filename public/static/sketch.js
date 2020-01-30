@@ -94,7 +94,7 @@ function draw() {
 }
 
 function canvasClicked() {
-  if (!gameData.waiting && gameData.myTurn) {
+  if (!gameData.waiting && gameData.myTurn && gameData.winner == null) {
     //First Row
     if (mouseX > 0 && mouseX < 133 && mouseY > 0 && mouseY < 133 && gameData.board[0] == null) addMarkToList(0, gameData.myMark, true);
     if (mouseX > 133 && mouseX < 266 && mouseY > 0 && mouseY < 133 && gameData.board[1] == null) addMarkToList(1, gameData.myMark, true);
@@ -224,6 +224,19 @@ function drawMark(loc, mark) {
   }
 }
 
+//Check if a row column or diagonal contains any null positions
+function anyNull(winDir, index) {
+  //Based on if the win is a row column or diagonal we need to do different math so we check
+  if (winDir == 0) {
+    return (gameData.board[index * 3] == null && gameData.board[1 + (index * 3)] == null && gameData.board[2 + (index * 3)] == null);
+  }else if (winDir == 1) {
+    return (gameData.board[index] == null && gameData.board[3 + index] == null && gameData.board[6 + index] == null);
+  }else if (winDir == 2) {
+    return (gameData.board[0] == null && gameData.board[4] == null && gameData.board[8] == null);
+  }else if (winDir == 3) {
+    return (gameData.board[2] == null && gameData.board[4] == null && gameData.board[6] == null);
+  }
+}
 
 //Check for a winner or tie
 function checkForWinner() {
@@ -233,7 +246,7 @@ function checkForWinner() {
   //Check rows
   for (var i = 0; i < 3; i++) {
     //Check if the current row is a wining row
-    if (gameData.board[0 + (i * 3)] == gameData.board[2 + (i * 3)] && gameData.board[1 + (i * 3)] == gameData.board[0 + (i * 3)]) {
+    if (gameData.board[0 + (i * 3)] == gameData.board[2 + (i * 3)] && gameData.board[1 + (i * 3)] == gameData.board[0 + (i * 3)] && !anyNull(0, i)) {
       //Set the winner
       winner = gameData.board[0 + (i * 3)];
 
@@ -253,7 +266,7 @@ function checkForWinner() {
 
   //Check columns
   for (var i = 0; i < 3; i++) {
-    if (gameData.board[0 + i] == gameData.board[3 + i] && gameData.board[6 + i] == gameData.board[0 + i]) {
+    if (gameData.board[0 + i] == gameData.board[3 + i] && gameData.board[6 + i] == gameData.board[0 + i] && !anyNull(1, i)) {
       //Set the winner
       winner = gameData.board[0 + i];
 
@@ -272,7 +285,7 @@ function checkForWinner() {
   }
   
   //Check diagonals
-  if (gameData.board[0] == gameData.board[4] && gameData.board[8] == gameData.board[0]) {
+  if (gameData.board[0] == gameData.board[4] && gameData.board[8] == gameData.board[0] && !anyNull(2, i)) {
     //Set the winner
     winner = gameData.board[0];
 
@@ -284,7 +297,7 @@ function checkForWinner() {
 
     //Set the winning diagonal or winDig to the current diagonal
     gameData.winDig = 0;
-  }else if (gameData.board[2] == gameData.board[4] && gameData.board[6] == gameData.board[2]) {
+  }else if (gameData.board[2] == gameData.board[4] && gameData.board[6] == gameData.board[2] && !anyNull(3, i)) {
     //Set the winner
     winner = gameData.board[2];
 
@@ -296,7 +309,7 @@ function checkForWinner() {
 
     //Set the winning diagonal or winDig to the current diagonal
     gameData.winDig = 1;
-  }
+  } 
 
   //Check if their is a winner
   if (winner != null) {
@@ -305,6 +318,8 @@ function checkForWinner() {
 
     //Set the winner in the gameData
     gameData.winner = winner;
+
+    document.getElementById("turns").innerHTML = `Winner: ${winner == 0 ? "X" : "O"}`;
   }
 
   //Set isTie to tue
@@ -332,13 +347,31 @@ function checkForWinner() {
 //Define drawWinLine which draws the win line
 function drawWinLine() {
   var winRow = gameData.winRow;
+  var winCol = gameData.winCol;
   var winner = gameData.winner;
   stroke((winner == 0 ? 255 : 0), (winner == 0 ? 0 : 128), 0);
+  //Check if the win is a row column or diagonal
   if (winRow != null) {
-    if (winRow == 0) {
+    if (winRow == 0) { //Check if the winning row is the first row
        line(0, 64, 400, 64);
-    }else if (winRow == 1) {
+    }else if (winRow == 1) { //Check if the winning row is the second row
       line(0, 200, 400, 200);
+    }else if (winRow == 2) { //Check if the winning row is the third row
+      line(0, 336, 400, 336);
+    }
+
+    //Set the stroke color to black
+    stroke(0);
+
+    //Leave the function
+    return;
+  }else if (winCol != null) {
+    if (winCol == 0) {
+      line(64, 0, 64, 400);
+    }else if (winCol == 1) {
+      line(200, 0, 200, 400);
+    }else if (winCol == 2) {
+      line(336, 0, 336, 400);
     }
   }
 }
@@ -371,6 +404,7 @@ function addMarkToList(loc, markType, fromClient) {
     socket.emit("placedMark", loc);
   }
 
+  //Check for a winner
   checkForWinner();
 }
 
