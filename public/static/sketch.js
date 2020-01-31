@@ -349,6 +349,7 @@ function drawWinLine() {
   var winRow = gameData.winRow;
   var winCol = gameData.winCol;
   var winner = gameData.winner;
+  var winDig = gameData.winDig;
   stroke((winner == 0 ? 255 : 0), (winner == 0 ? 0 : 128), 0);
   //Check if the win is a row column or diagonal
   if (winRow != null) {
@@ -366,13 +367,31 @@ function drawWinLine() {
     //Leave the function
     return;
   }else if (winCol != null) {
-    if (winCol == 0) {
+    if (winCol == 0) { //Check if the winning column is the first column
       line(64, 0, 64, 400);
-    }else if (winCol == 1) {
+    }else if (winCol == 1) { //Check if the winning column is the second column
       line(200, 0, 200, 400);
-    }else if (winCol == 2) {
+    }else if (winCol == 2) { //Check if the winning column is the third column
       line(336, 0, 336, 400);
     }
+
+    //Set the stoke color to black
+    stroke(0);
+
+    //Leave the function
+    return;
+  }else if (winDig != null) {
+    if (winDig == 0) { //Check if the winning diagonal is the top left to bottom right diagonal
+      line(0, 0, 400, 400);
+    }else if (winDig == 1) { //Check if the winning diagonal is the top right to bottom left diagonal
+      line(400, 0, 0, 400);
+    }
+
+    //Set the stoke color to black
+    stroke(0);
+
+    //Leave the function
+    return;
   }
 }
 
