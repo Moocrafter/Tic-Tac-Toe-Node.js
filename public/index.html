@@ -95,7 +95,7 @@
 		              user-select: none; /* Non-prefixed version, currently
 		                                  supported by Chrome and Opera */
 		}
-		.playerChoose {
+		.customButton {
 			background: #0000ff;
 			background: linear-gradient(#0000ff, #6b6bff);
 			border-radius: 5px;
@@ -191,10 +191,10 @@
 <body style="text-align: center; margin: 0px;">
 	<div id="gameCanvas" style="display: none;"></div>
 	<div id="gameTypePick" style="width: 100%" class="noselect">
-		<div id="randomPlayer" class="playerChoose font-face" onclick="gameTypePick(0)">
+		<div id="randomPlayer" class="customButton font-face" onclick="gameTypePick(0)">
 			<h1>Random Person</h1>
 		</div>
-		<div id="friendPlayer" class="playerChoose" onclick="gameTypePick(1)">
+		<div id="friendPlayer" class="customButton" onclick="gameTypePick(1)">
 			<script type="text/javascript">buttonResize()</script>
 			<h1>Friend</h1>
 		</div>
@@ -221,5 +221,7 @@
 		<div class="close"></div>
 		<b class="overlayText">The other player has left!</b>
 	</div>
+	<!-- Adding Exit Button -->
+	<button id="exitGameButton" class="customButton" style="position: absolute; bottom: 100px; right: 50px;">Exit Game</button>
 </body>
 </html>
