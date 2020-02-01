@@ -188,6 +188,10 @@ io.on('connection', (socket) => {
 		//Get this games game id from the users socket id
 		var gameId = userToGame[socket.id];
 
+		//Check if a the game a user is part of exists to stop a bug
+		if (!games.hasOwnProperty(gameId)) return;
+		console.log(games.hasOwnProperty(gameId));
+
 		//Set thisGame to the game that this user is in
 		var thisGame = games[gameId];
 
@@ -200,6 +204,8 @@ io.on('connection', (socket) => {
 		//Check if the user who is trying to place a mark is currently allowed to place a mark
 		if (thisGame[currentTurn].myTurn) { //If it is their turn then continue
 			//Place the current users respective marker down in the board
+
+			
 			thisGame.board[loc] = (currentTurn == "p1" ? 0 : 1);
 
 			//Change the currentTurn

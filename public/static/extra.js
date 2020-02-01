@@ -236,8 +236,14 @@ async function resetGame() {
   //Set isHidden to true to tell the canvas not to waste time on drawing the canvas
   isHidden = true;
 
-  //Set waiting to true because the next time we see the canvas it will be waiting
-  gameData.waiting = true;
+  //Reset gameData
+  gameData = {
+    "waiting" : true,
+    "gameId" : "",
+    "myMark" : null,
+    "myTurn" : false,
+    "winner" : null,
+  };
 
   //Set gameData.board to a array with 9 items of value undefined
   gameData.board = Array.apply(null, Array(9)).map(function (x, i) { return null; });

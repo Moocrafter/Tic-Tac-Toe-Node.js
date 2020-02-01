@@ -130,7 +130,6 @@
 			border-style: solid;
 			border-color: gray;
 			z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
-			cursor: pointer; /* Add a pointer on hover */
 			word-wrap: break-word;
 		}
 
@@ -213,15 +212,14 @@
 		<br>
 		<div id="copiedMessage" style="display: none; opacity: 0.0984771;">Copied</div>
 	</div>
-	<div id="invalidCodeOverlay" class="overlay" style="display: none; font-family: 'Roboto', sans-serif; font-size: 350%;">
-		<div class="close"></div>
+	<div id="invalidCodeOverlay" class="overlay noselect" style="display: none; font-family: 'Roboto', sans-serif; font-size: 350%;">
+		<div class="close" style="cursor: pointer;"></div>
 		<b class="overlayText">Invalid Game Code!</b>
 	</div>
-	<div id="otherPlayerLeftOverlay" class="overlay" style="display: none; font-family: 'Roboto', sans-serif; font-size: 350%; position: absolute; top: 87.10369881109644vh">
-		<div class="close"></div>
+	<div id="otherPlayerLeftOverlay" class="overlay noselect" style="display: none; font-family: 'Roboto', sans-serif; font-size: 350%; position: absolute; top: 87.10369881109644vh">
+		<div class="close" style="cursor: pointer;"></div>
 		<b class="overlayText">The other player has left!</b>
 	</div>
-	<!-- Adding Exit Button -->
-	<button id="exitGameButton" class="customButton" style="position: absolute; bottom: 100px; right: 50px;">Exit Game</button>
+	<div id="exitGameButton" class="customButton noselect" style="position: absolute; bottom: 100px; right: 50px; display: none;" onclick="resetGame(); this.style.display = 'none';">Exit Game</div>
 </body>
 </html>

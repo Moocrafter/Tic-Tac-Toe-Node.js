@@ -319,7 +319,11 @@ function checkForWinner() {
     //Set the winner in the gameData
     gameData.winner = winner;
 
+    //Change the current turn message to a winner message with the correct winner
     document.getElementById("turns").innerHTML = `Winner: ${winner == 0 ? "X" : "O"}`;
+
+    //Show the exit game button
+    document.getElementById("exitGameButton").style.display = "";
   }
 
   //Set isTie to tue
@@ -341,6 +345,12 @@ function checkForWinner() {
   if (isTie) {
     //Log that the game is a tie
     console.log("Tie!");
+
+    //Change the current turn message to a tie message
+    document.getElementById("turns").innerHTML = `Tie!`;
+
+    //Show the exit game button
+    document.getElementById("exitGameButton").style.display = "";
   }
 }
 
