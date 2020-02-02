@@ -19,6 +19,7 @@ var gameData = {
   "myMark" : null,
   "myTurn" : false,
   "winner" : null,
+  "markCount" : 0,
 };
 
 //Define isHidden as true so the draw function doesn't draw when we can't see the canvas
@@ -324,25 +325,13 @@ function checkForWinner() {
 
     //Show the exit game button
     document.getElementById("exitGameButton").style.display = "";
+
+    //Exit the function since we found a ended game case and don't need to waste time on checking for a tie
+    return;
   }
 
-  //Set isTie to tue
-  var isTie = true;
-
-  //Loop though all of the positions that a mark can be placed
-  for (var i = 0; i < 9; i++) {
-    //Check if the current position is null or empty
-    if (gameData.board[i] == null) {
-      //If the current position is null that means the board is not full thus there can't be a tie
-      isTie = false;
-
-      //Break out of the loop
-      break;
-    }
-  }
-
-  //If its a tie then log that
-  if (isTie) {
+  //Check if 9 marks have been placed
+  if (gameData.markCount == 9) {
     //Log that the game is a tie
     console.log("Tie!");
 
@@ -356,11 +345,17 @@ function checkForWinner() {
 
 //Define drawWinLine which draws the win line
 function drawWinLine() {
+  //Set vars to be used as a short hand of the longer version
   var winRow = gameData.winRow;
   var winCol = gameData.winCol;
   var winner = gameData.winner;
   var winDig = gameData.winDig;
-  stroke((winner == 0 ? 255 : 0), (winner == 0 ? 0 : 128), 0);
+
+  //Set the line color based on who the winner is
+  //stroke((winner == 0 ? 255 : 0), (winner == 0 ? 0 : 128), 0);
+
+  stroke(0);
+
   //Check if the win is a row column or diagonal
   if (winRow != null) {
     if (winRow == 0) { //Check if the winning row is the first row
@@ -418,11 +413,17 @@ function drawMarks() {
 }
 
 function addMarkToList(loc, markType, fromClient) {
+  //Don't change the board if there is a winner
+  if (gameData.winner != null) return;
+  
   //Change the turn once a mark is placed by either the current player or the server
   gameData.myTurn = !gameData.myTurn;
 
   //Add the mark of either player to the game board
   gameData.board[loc] = markType;
+
+  //Add one to the mark count
+  gameData.markCount += 1;
 
   //Change the turn
   document.getElementById("turns").innerHTML = `Current Turn: ${gameData.myTurn ? "You" : "Opponent"}`;
@@ -433,8 +434,11 @@ function addMarkToList(loc, markType, fromClient) {
     socket.emit("placedMark", loc);
   }
 
-  //Check for a winner
-  checkForWinner();
+  //Don't check for a winner unless there have been at least 5 moves because any less and no win nor tie is possible
+  if (gameData.markCount >= 5) {
+    //Check for a winner
+    checkForWinner();
+  }
 }
 
 function gameTypePick(type) {

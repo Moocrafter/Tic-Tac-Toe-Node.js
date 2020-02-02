@@ -32,7 +32,7 @@ app.get('/:gameCode', (req, res) => {
 	//Make sure that the game code used is valid if not then tell the client
 	if (tempGames.hasOwnProperty(req.params.gameCode)) {
 		//Write script tag that has the client start with a id
-		res.write(`<script id="remove">startWithId("${req.params.gameCode}", false);gameData.waiting = false;document.getElementById("remove").outerHTML = "";</script>`);
+		res.write(`<script id="remove">startWithId("${req.params.gameCode}", false);thisGame.waiting = false;document.getElementById("remove").outerHTML = "";</script>`);
 	}else {
 		//Write a line of js code that shows a "invalid code" message on screen if the game code provided is not real 
 		res.write(`<script id="remove">invalidCode = new InvalidCode();document.getElementById("remove").outerHTML = "";</script>`);
@@ -78,6 +78,12 @@ io.on('connection', (socket) => {
 
 			//Generate a random number 0 or 1
 			workingGame.currentTurn = Math.round(Math.random());
+
+			//Define markCount so we can count the number of marks
+			workingGame.markCount = 0;
+
+			//Define winner so we can tell if there is a winner or tie
+			workingGame.winner = null;
 
 			//Send the opposite of the random number to p2
 			socket.emit("startPlayerData", (workingGame.currentTurn == 0 ? 1 : 0));
@@ -188,9 +194,11 @@ io.on('connection', (socket) => {
 		//Get this games game id from the users socket id
 		var gameId = userToGame[socket.id];
 
+		//If there is a winner then ignore this event
+		if (games[gameId].winner != null) return;
+
 		//Check if a the game a user is part of exists to stop a bug
 		if (!games.hasOwnProperty(gameId)) return;
-		console.log(games.hasOwnProperty(gameId));
 
 		//Set thisGame to the game that this user is in
 		var thisGame = games[gameId];
@@ -204,8 +212,6 @@ io.on('connection', (socket) => {
 		//Check if the user who is trying to place a mark is currently allowed to place a mark
 		if (thisGame[currentTurn].myTurn) { //If it is their turn then continue
 			//Place the current users respective marker down in the board
-
-			
 			thisGame.board[loc] = (currentTurn == "p1" ? 0 : 1);
 
 			//Change the currentTurn
@@ -215,7 +221,20 @@ io.on('connection', (socket) => {
 			thisGame[currentTurn].myTurn = !thisGame[currentTurn].myTurn;
 			thisGame[(currentTurn == "p1" ? "p2" : "p1")].myTurn = !thisGame[(currentTurn == "p1" ? "p2" : "p1")].myTurn;
 
+			//Add one to the markCount because a mark was placed
+			thisGame.markCount += 1;
+
+			//Tell the other player that the current player made a mark
 			socket.to(otherPlayer(socket, gameId, 1)).emit("otherMadeMark", loc);
+
+			//Check for a winner if there is one then set winnerExist to true
+			var winnerExist = checkForWinner(gameId);
+
+			//If there is a winner then delete the game
+			if (winnerExist) {
+				//Delete the game
+				deleteGame(gameId, socket);
+			}
 		}
 	});
 
@@ -228,7 +247,8 @@ io.on('connection', (socket) => {
 //Listen on port 3000
 http.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
-var genShortId = () => {
+//Define a function to generate a random 8 character id
+function genShortId() {
 	var ALPHABET = '0123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNOPQRSTUVWXYZ';
 
 	var ID_LENGTH = 8;
@@ -260,4 +280,94 @@ function isProfane(text) {
 //Check if a game id exists
 function doesIdExist(id) {
 	return (games.hasOwnProperty(id) || tempGames.hasOwnProperty(id));
+}
+
+//Check for a winner or tie
+function checkForWinner(gameId) {
+	//Set thisGame to the game for the gameId
+	var thisGame = games[gameId];
+	
+	//Set winner to null because we don't have a valid winner yet
+	var winner = null;
+	
+	//Check rows
+	for (var i = 0; i < 3; i++) {
+		//Check if the current row is a wining row
+		if (thisGame.board[0 + (i * 3)] == thisGame.board[2 + (i * 3)] && thisGame.board[1 + (i * 3)] == thisGame.board[0 + (i * 3)] && !anyNull(0, i, thisGame)) {
+			//Set the winner
+			winner = thisGame.board[0 + (i * 3)];
+
+			//Break out of the loop because we have found a winner
+			break;
+		}
+	}
+
+	//Check columns
+	for (var i = 0; i < 3; i++) {
+		if (thisGame.board[0 + i] == thisGame.board[3 + i] && thisGame.board[6 + i] == thisGame.board[0 + i] && !anyNull(1, i, thisGame)) {
+			//Set the winner
+			winner = thisGame.board[0 + i];
+
+			//Break out of the loop because we have found a winner
+			break;
+		}
+	}
+	
+	//Check diagonals
+	if (thisGame.board[0] == thisGame.board[4] && thisGame.board[8] == thisGame.board[0] && !anyNull(2, i, thisGame)) {
+		//Set the winner
+		winner = thisGame.board[0];
+	}else if (thisGame.board[2] == thisGame.board[4] && thisGame.board[6] == thisGame.board[2] && !anyNull(3, i, thisGame)) {
+		//Set the winner
+		winner = thisGame.board[2];
+	} 
+
+	//Check if their is a winner
+	if (winner != null) {
+		//Log who the winner is
+		console.log(`Winner: ${winner == 0 ? "X" : "O"}`);
+
+		//Set the winner in the thisGame
+		thisGame.winner = winner;
+		
+		//Exit the function since we found a ended game case and don't need to waste time on checking for a tie
+		return true;
+	}
+
+	//Check if 9 marks have been placed
+	if (thisGame.markCount == 9) {
+		//Log that the game is a tie
+		console.log("Tie!");
+
+		//Set winner to true to represent a tie
+		thisGame.winner = true;
+
+		return true;
+	}
+}
+
+//Check if a row column or diagonal contains any null positions
+function anyNull(winDir, index, curGame) {
+	//Based on if the win is a row column or diagonal we need to do different math so we check
+	if (winDir == 0) {
+	  return (curGame.board[index * 3] == null && curGame.board[1 + (index * 3)] == null && curGame.board[2 + (index * 3)] == null);
+	}else if (winDir == 1) {
+	  return (curGame.board[index] == null && curGame.board[3 + index] == null && curGame.board[6 + index] == null);
+	}else if (winDir == 2) {
+	  return (curGame.board[0] == null && curGame.board[4] == null && curGame.board[8] == null);
+	}else if (winDir == 3) {
+	  return (curGame.board[2] == null && curGame.board[4] == null && curGame.board[6] == null);
+	}
+  }
+
+//Delete a game
+function deleteGame(gameId, thisPlayer) {
+	//Delete the other player from the user to game object
+	delete userToGame[otherPlayer(thisPlayer, gameId, 1)];
+	
+	//Delete a player from the user to game object
+	delete userToGame[thisPlayer.id];
+
+	//Delete the game a player is part of
+	delete games[gameId];
 }
