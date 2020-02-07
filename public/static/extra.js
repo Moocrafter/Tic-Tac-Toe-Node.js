@@ -249,51 +249,7 @@ async function resetGame() {
   gameData.board = Array.apply(null, Array(9)).map(function (x, i) { return null; });
 }
 
-/*window.Clipboard = (function(window, document, navigator) {
-  var textArea,
-  copy;
-  
-  function isOS() {
-  return navigator.userAgent.match(/ipad|iphone/i);
-  }
-  
-  function createTextArea(text) {
-  textArea = document.createElement('textArea');
-  textArea.value = text;
-  document.body.appendChild(textArea);
-  }
-  
-  function selectText() {
-  var range,
-  selection;
-  
-  if (isOS()) {
-  range = document.createRange();
-  range.selectNodeContents(textArea);
-  selection = window.getSelection();
-  selection.removeAllRanges();
-  selection.addRange(range);
-  textArea.setSelectionRange(0, 999999);
-  } else {
-  textArea.select();
-  }
-  }
-  
-  function copyToClipboard() {
-  document.execCommand('copy');
-  document.body.removeChild(textArea);
-  }
-  
-  copy = function(text) {
-  createTextArea(text);
-  selectText();
-  copyToClipboard();
-  };
-  
-  return {
-  copy: copy
-  };
-  })(window, document, navigator);*/
+
 
 //Cross browser copy to clipboard function
 function copyToClipboard(text) {
@@ -302,15 +258,6 @@ function copyToClipboard(text) {
   } else if (window.clipboardData) { // IE
     window.clipboardData.setData('text', text);
   } else { // other browsers, iOS, Mac OS
-    var dummy = document.createElement("textarea"); // to avoid breaking origin page when copying more words
-    // cant copy when adding below this code
-     dummy.style.display = 'none';
-
-    document.body.appendChild(dummy); //Be careful if you use textarea. setAttribute('value', value), which works with "input" does not work with "textarea". – Eduard
-
-    dummy.value = text;
-    dummy.select();
-    document.execCommand("copy");
-    document.body.removeChild(dummy);
+    myClipboard.copy(text);
   }
 }

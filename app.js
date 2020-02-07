@@ -32,7 +32,7 @@ app.get('/:gameCode', (req, res) => {
 	//Make sure that the game code used is valid if not then tell the client
 	if (tempGames.hasOwnProperty(req.params.gameCode)) {
 		//Write script tag that has the client start with a id
-		res.write(`<script id="remove">startWithId("${req.params.gameCode}", false);thisGame.waiting = false;document.getElementById("remove").outerHTML = "";</script>`);
+		res.write(`<script id="remove">startWithId("${req.params.gameCode}", false);gameData.waiting = false;document.getElementById("remove").outerHTML = "";</script>`);
 	}else {
 		//Write a line of js code that shows a "invalid code" message on screen if the game code provided is not real 
 		res.write(`<script id="remove">invalidCode = new InvalidCode();document.getElementById("remove").outerHTML = "";</script>`);
