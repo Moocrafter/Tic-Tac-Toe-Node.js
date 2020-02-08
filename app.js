@@ -189,6 +189,10 @@ io.on('connection', (socket) => {
 		}
 	});
 
+	socket.on("randPlayReq", function() {
+		randPlayQueue[randPlayQueue.length] = socket.id;
+	});
+
 	//This code runs when a user places a marker
 	socket.on("placedMark", (loc) => {
 		//Get this games game id from the users socket id

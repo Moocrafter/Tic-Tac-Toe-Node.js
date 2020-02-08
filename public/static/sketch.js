@@ -88,8 +88,16 @@ function draw() {
       //Set the text color
       fill(0);
 
-      //Show the text
-      text(`Have a friend go to\nlocalhost:3000/${gameData.gameId}`, 11.5/*-80*/, /*45*/30);
+      if (gameData.waiting == 2) {
+        //Show the text
+        text("Finding random player...\n\nPlease wait...", 11.5, 30)
+      }else {
+        //Set the text size
+        textSize(22);
+
+        //Show the text
+        text(`Have a friend go to\nmoocraft.tk/tic-tac-toe/${gameData.gameId}`, 11.5/*-80*/, /*45*/30);
+      }
     }
   }
 }
@@ -444,9 +452,25 @@ function addMarkToList(loc, markType, fromClient) {
 function gameTypePick(type) {
   //Random Player
   if (type == 0) {
-    
+    //Tell the server that we want to play against a random person
+    socket.emit("randPlayReq");
+
+    //Set isHidden to false to make the canvas start drawing
+    isHidden = false;
+
+    //Set gameData.waiting so the canvas knows to show the waiting text for random person
+    gameData.waiting = 2;
+
+    //Show the canvas
+    document.getElementById("gameCanvas").style.display = ``;
+
+    //Hide the gameTypePick menu
+    document.getElementById("gameTypePick").style.display = "none";
   }else if (type == 1) { //Friend
+    //Get the game code from the server
     socket.emit("getGameCode", 1);
+
+    //Hide the gameTypePick menu
     document.getElementById("gameTypePick").style.display = `none`;
   }
 }
