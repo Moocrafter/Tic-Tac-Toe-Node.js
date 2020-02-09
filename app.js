@@ -1,21 +1,26 @@
+//Require all the necessary modules
 const fs = require('fs');
 var app = require('express')();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var serveStatic = require('serve-static');
 var Profane = require('profane');
+
+//Setup the profane library
 var p = new Profane();
+
+//Set the port
 const port = 3000;
 
+//Setup all needed variables
 var games = {};
 var tempGames = {};
 var userToGame = {};
+var randPlayQueue = [];
 
 //GET / and send it to the user
 app.get('/', (req, res) => {
-	var data = fs.readFileSync(`./public/index.html`).toString();
-	res.write(data);
-	res.end();
+	res.sendFile('./public/index.html')
 });
 
 //Serve static files
@@ -149,47 +154,28 @@ io.on('connection', (socket) => {
 
 	//When a user wants to get a new game code generate one and set up a temp game
 	socket.on('getGameCode', (type) => {
-		//Set doesExist to true
-		var doesExist = true;
+		//Create a temporary game and return the game id
+		var thisId = createTempGame(socket);
 
-		//Keep generating short id codes until we get one that hasn't been used
-		while (doesExist) {
-			//Generate short game id
-			var thisId = genShortId();
-
-			//Check if the game code generated contains profane words if so skip that game code
-			if (!isProfane(thisId)) {
-				//If the game code generated hasn't been used and isn't profane then we continue
-				if (!doesIdExist(thisId)) {
-					//We set doesExist to false because we have found a game id that doesn't exist
-					doesExist = false;
-
-					//Set tempGames at the generated id to a empty json object
-					tempGames[thisId] = {};
-
-					//Set the socket id for a game to p1
-					tempGames[thisId][socket.id] = "p1";
-
-					//Setup the p1 player
-					tempGames[thisId].p1 = {
-						"socketId" : socket.id,
-		 				"myTurn" : false,
-					};
-					
-					//Create an empty board
-					tempGames[thisId].board = Array.apply(null, Array(9)).map(function (x, i) { return null; });
-
-					//Add the user to the userToGame object
-					userToGame[socket.id] = thisId;
-
-					//Tell the client that the game code hs been generated and accepted
-					socket.emit(`recvGameCode`, thisId, type, true);
-				}
-			}
-		}
+		//Tell the client that the game code hs been generated and accepted
+		socket.emit(`recvGameCode`, thisId, type, true);
 	});
 
+	//Runs when a user requests to play against a random player
 	socket.on("randPlayReq", function() {
+		//If the number of people in the queue is greater then or equal to 1 then create a game with both the current player and and the player in the queue
+		if (randPlayQueue.length >= 1) {
+			//Get the player to play against
+			var player2 = randPlayQueue[0];
+
+			//Create a temporary game
+			var thisId = createTempGame(socket);
+
+			//Tell the client that the game code hs been generated and accepted
+			socket.emit(`recvGameCode`, thisId, 1, true);
+		}
+
+		//Add user to random player queue
 		randPlayQueue[randPlayQueue.length] = socket.id;
 	});
 
@@ -362,7 +348,47 @@ function anyNull(winDir, index, curGame) {
 	}else if (winDir == 3) {
 	  return (curGame.board[2] == null && curGame.board[4] == null && curGame.board[6] == null);
 	}
-  }
+}
+
+function createTempGame(socket) {
+	//Set doesExist to true
+	var doesExist = true;
+
+	//Keep generating short id codes until we get one that hasn't been used
+	while (doesExist) {
+		//Generate short game id
+		var thisId = genShortId();
+
+		//Check if the game code generated contains profane words if so skip that game code
+		if (!isProfane(thisId)) {
+			//If the game code generated hasn't been used and isn't profane then we continue
+			if (!doesIdExist(thisId)) {
+				//We set doesExist to false because we have found a game id that doesn't exist
+				doesExist = false;
+
+				//Set tempGames at the generated id to a empty json object
+				tempGames[thisId] = {};
+
+				//Set the socket id for a game to p1
+				tempGames[thisId][socket.id] = "p1";
+
+				//Setup the p1 player
+				tempGames[thisId].p1 = {
+					"socketId" : socket.id,
+					"myTurn" : false,
+				};
+
+				//Create an empty board
+				tempGames[thisId].board = Array.apply(null, Array(9)).map(function (x, i) { return null; });
+
+				//Add the user to the userToGame object
+				userToGame[socket.id] = thisId;
+
+				return thisId;
+			}
+		}
+	}
+}
 
 //Delete a game
 function deleteGame(gameId, thisPlayer) {
