@@ -28,7 +28,9 @@
 
 		//On recvGameCode call the gotGameCode function
 		socket.on('recvGameCode', (gameCode, type, showCopied) => {
-			if (type == 1) gotGameCode(gameCode, type, showCopied);
+			if (type == 0) {
+				gotGameCode(gameCode, type, showCopied);
+			}else if (type == 1) gotGameCode(gameCode, type, showCopied);
 		});
 
 		//When the server notifies us about the other player joining the game this function run
@@ -39,7 +41,7 @@
 			//Show the extra data like which players turn it is
 			document.getElementById(`extraData`).style.display = ``;
 
-			//Set waiting to false to dra the grid
+			//Set waiting to false to draw the grid
 			gameData.waiting = false;
 		});
 

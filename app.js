@@ -20,7 +20,7 @@ var randPlayQueue = [];
 
 //GET / and send it to the user
 app.get('/', (req, res) => {
-	res.sendFile('./public/index.html')
+	res.sendFile(__dirname + '/public/index.html');
 });
 
 //Serve static files
@@ -108,12 +108,12 @@ io.on('connection', (socket) => {
 
 		//If a player is starting a game or is in a game and disconnects then notify the other player and remove the game
 		console.log(`This socket id: ${socket.id}\nuserToGame: ${JSON.stringify(userToGame)}`);
+
+		//Define the playerSocketId var because after a while we lose the players socket id
+		var playerSocketId = socket.id;
 		
 		//If the user is part of a game or tempGame then notify the other player
-		if (userToGame.hasOwnProperty(socket.id)) {
-			//Define the playerSocketId var because after a while we lose the players socket id
-			var playerSocketId = socket.id;
-
+		if (userToGame.hasOwnProperty(playerSocketId)) {
 			//Get this players game id
 			var thisId = userToGame[playerSocketId];
 
@@ -136,7 +136,7 @@ io.on('connection', (socket) => {
 				
 				//Delete the game
 				delete games[thisId];
-			}else {
+			}else if (tempGames.hasOwnProperty(thisId)) {
 				//If there are more than two players in a tempGame than send a disconnect message
 				//if (Object.keys(tempGames[thisId]).length > 2) socket.to(tempGames[thisId][(tempGames[thisId][playerSocketId] == "p1" ? "p2" : "p1")].socketId).emit(`otherPlayerLeft`, ``);
 			
@@ -145,6 +145,9 @@ io.on('connection', (socket) => {
 
 				//Delete the temporary game
 				delete tempGames[thisId];
+			}else {
+				//Delete the player from the randPlayQueue or the random player queue
+				delete randPlayQueue[playerSocketId];
 			}
 
 			//Delete the old user from the userToGame object
@@ -165,14 +168,66 @@ io.on('connection', (socket) => {
 	socket.on("randPlayReq", function() {
 		//If the number of people in the queue is greater then or equal to 1 then create a game with both the current player and and the player in the queue
 		if (randPlayQueue.length >= 1) {
+			//Set thisId to a random game code that is unused
+			var thisId = generateGameCode();
+
 			//Get the player to play against
 			var player2 = randPlayQueue[0];
 
-			//Create a temporary game
-			var thisId = createTempGame(socket);
+			//Setup a game
+			games[thisId] = {};
 
-			//Tell the client that the game code hs been generated and accepted
-			socket.emit(`recvGameCode`, thisId, 1, true);
+			//Setup player 1 or the p1 player
+			games[thisId].p1 = {
+				"socketId" : socket.id,
+				"myTurn" : false,
+			};
+
+			//Setup player 2 or the p2 player
+			games[thisId].p2 = {
+				"socketId" : player2,
+				"myTurn" : false,
+			};
+
+			//Add both users to the userToGame object
+			userToGame[socket.id] = thisId;
+			userToGame[player2] = thisId;
+
+			//Tell p2 that p1 has joined
+			socket.to(player2).emit(`otherJoined`);
+
+			//Set workingGame to the current game we are working on
+			var workingGame = games[thisId];
+
+			//Generate a random number 0 or 1
+			workingGame.currentTurn = Math.round(Math.random());
+
+			//Define markCount so we can count the number of marks
+			workingGame.markCount = 0;
+
+			//Define winner so we can tell if there is a winner or tie
+			workingGame.winner = null;
+
+			//Create an empty board
+			workingGame.board = Array.apply(null, Array(9)).map(function (x, i) { return null; });
+
+			//Send the original random number to p1
+			socket.emit("startPlayerData", workingGame.currentTurn);
+
+			//Send the opposite of the random number to p2
+			socket.to(player2).emit("startPlayerData", (workingGame.currentTurn == 0 ? 1 : 0));
+
+			//Set the myTurn option of both player 1 and player 2
+			workingGame.p1.myTurn = (workingGame.currentTurn == 0 ? true : false);
+			workingGame.p2.myTurn = (workingGame.currentTurn == 1 ? true : false);
+
+			//Tell the client that the game code has been generated and accepted
+			socket.emit(`recvGameCode`, thisId, 0, true);
+
+			//Tell the client that the game code has been generated and accepted
+			socket.to(player2).emit(`recvGameCode`, thisId, 0, true);
+
+			console.log("Other player: " + otherPlayer(socket, thisId, 1));
 		}
 
 		//Add user to random player queue
@@ -259,7 +314,7 @@ function sendDataToBoth(name, data, socket, id) {
 //Return the other players socket id
 function otherPlayer(socket, id, gameScope) {
 	if (gameScope == 0) return tempGames[id][(tempGames[id][socket.id] == "p1" ? "p2" : "p1")].socketId;
-	else return games[id][(games[id][socket.id] == "p1" ? "p2" : "p1")].socketId;
+	return games[id][(games[id][socket.id] == "p1" ? "p2" : "p1")].socketId;
 }
 
 //Check if some text contains any number of profane words if so return true otherwise return false
@@ -351,6 +406,34 @@ function anyNull(winDir, index, curGame) {
 }
 
 function createTempGame(socket) {
+	//Set thisId to a random unused game code
+	var thisId = generateGameCode();
+
+	//We set doesExist to false because we have found a game id that doesn't exist
+	doesExist = false;
+
+	//Set tempGames at the generated id to a empty json object
+	tempGames[thisId] = {};
+
+	//Set the socket id for a game to p1
+	tempGames[thisId][socket.id] = "p1";
+
+	//Setup the p1 player
+	tempGames[thisId].p1 = {
+		"socketId" : socket.id,
+		"myTurn" : false,
+	};
+
+	//Create an empty board
+	tempGames[thisId].board = Array.apply(null, Array(9)).map(function (x, i) { return null; });
+
+	//Add the user to the userToGame object
+	userToGame[socket.id] = thisId;
+
+	return thisId;
+}
+
+function generateGameCode() {
 	//Set doesExist to true
 	var doesExist = true;
 
@@ -365,25 +448,8 @@ function createTempGame(socket) {
 			if (!doesIdExist(thisId)) {
 				//We set doesExist to false because we have found a game id that doesn't exist
 				doesExist = false;
-
-				//Set tempGames at the generated id to a empty json object
-				tempGames[thisId] = {};
-
-				//Set the socket id for a game to p1
-				tempGames[thisId][socket.id] = "p1";
-
-				//Setup the p1 player
-				tempGames[thisId].p1 = {
-					"socketId" : socket.id,
-					"myTurn" : false,
-				};
-
-				//Create an empty board
-				tempGames[thisId].board = Array.apply(null, Array(9)).map(function (x, i) { return null; });
-
-				//Add the user to the userToGame object
-				userToGame[socket.id] = thisId;
-
+				
+				//Return the game id
 				return thisId;
 			}
 		}

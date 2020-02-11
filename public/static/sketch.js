@@ -489,8 +489,11 @@ function gotGameCode(gameCode, type, showCopied) {
   //Set gameData.waiting so the canvas knows to show the waiting text
   gameData.waiting = true;
 
-  //Show the copy button
-  document.getElementById("copiedParent").style.display = (showCopied ? "" : "none");
+  //If the game type is one or if the game type is friend
+  if (type == 1) {
+    //Show the copy button
+    document.getElementById("copiedParent").style.display = (showCopied ? "" : "none");
+  }
 
   //Show the canvas
   document.getElementById("gameCanvas").style.display = ``;
