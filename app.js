@@ -161,7 +161,7 @@ io.on('connection', (socket) => {
 		var thisId = createTempGame(socket);
 
 		//Tell the client that the game code hs been generated and accepted
-		socket.emit(`recvGameCode`, thisId, type, true);
+		socket.emit(`recvGameCode`, thisId, type);
 	});
 
 	//Runs when a user requests to play against a random player
@@ -193,11 +193,23 @@ io.on('connection', (socket) => {
 			userToGame[socket.id] = thisId;
 			userToGame[player2] = thisId;
 
+			//Remove the player that we just made a game with
+			//delete randPlayQueue[0];
+
+			randPlayQueue.shift();
+
 			//Tell p2 that p1 has joined
-			socket.to(player2).emit(`otherJoined`);
+			socket.to(player2).emit('otherJoined');
+
+			//Tell p1 that p2 is ready
+			socket.emit('otherJoined')
 
 			//Set workingGame to the current game we are working on
 			var workingGame = games[thisId];
+
+			//Setup things for looking up a socket id and turning it into p1 or p2
+			workingGame[socket.id] = "p1";
+			workingGame[player2] = "p2";
 
 			//Generate a random number 0 or 1
 			workingGame.currentTurn = Math.round(Math.random());
@@ -222,16 +234,16 @@ io.on('connection', (socket) => {
 			workingGame.p2.myTurn = (workingGame.currentTurn == 1 ? true : false);
 
 			//Tell the client that the game code has been generated and accepted
-			socket.emit(`recvGameCode`, thisId, 0, true);
+			socket.emit(`recvGameCode`, thisId, 0);
 
 			//Tell the client that the game code has been generated and accepted
-			socket.to(player2).emit(`recvGameCode`, thisId, 0, true);
+			socket.to(player2).emit(`recvGameCode`, thisId, 0);
 
 			console.log("Other player: " + otherPlayer(socket, thisId, 1));
+		}else { //This runs when there is no one in in the queue
+			//Add user to random player queue
+			randPlayQueue[randPlayQueue.length] = socket.id;
 		}
-
-		//Add user to random player queue
-		randPlayQueue[randPlayQueue.length] = socket.id;
 	});
 
 	//This code runs when a user places a marker
@@ -252,8 +264,8 @@ io.on('connection', (socket) => {
 		if (thisGame.board[loc] != null) return;
 
 		//Set currentTurn to the current turn of this game which is either "p1" or "p2"
-		var currentTurn = (thisGame[socket.id]);
-
+		var currentTurn = thisGame[socket.id];
+		console.log(thisGame)
 		//Check if the user who is trying to place a mark is currently allowed to place a mark
 		if (thisGame[currentTurn].myTurn) { //If it is their turn then continue
 			//Place the current users respective marker down in the board

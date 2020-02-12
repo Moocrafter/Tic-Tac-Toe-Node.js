@@ -27,10 +27,10 @@
 		});
 
 		//On recvGameCode call the gotGameCode function
-		socket.on('recvGameCode', (gameCode, type, showCopied) => {
+		socket.on('recvGameCode', (gameCode, type) => {
 			if (type == 0) {
-				gotGameCode(gameCode, type, showCopied);
-			}else if (type == 1) gotGameCode(gameCode, type, showCopied);
+				gotGameCode(gameCode, type, false);
+			}else if (type == 1) gotGameCode(gameCode, type, true);
 		});
 
 		//When the server notifies us about the other player joining the game this function run

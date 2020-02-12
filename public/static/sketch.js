@@ -486,14 +486,14 @@ function gotGameCode(gameCode, type, showCopied) {
   //Set isHidden to false to make the canvas start drawing
   isHidden = false;
 
-  //Set gameData.waiting so the canvas knows to show the waiting text
-  gameData.waiting = true;
-
-  //If the game type is one or if the game type is friend
+  //If the game type is 1 or a friend game then we need to show the waiting text
   if (type == 1) {
-    //Show the copy button
-    document.getElementById("copiedParent").style.display = (showCopied ? "" : "none");
+    //Set gameData.waiting so the canvas knows to show the waiting text
+    gameData.waiting = true;
   }
+
+  //Show the copy button
+  document.getElementById("copiedParent").style.display = (showCopied ? "" : "none");
 
   //Show the canvas
   document.getElementById("gameCanvas").style.display = ``;
