@@ -80,6 +80,9 @@
 		});
 
 		var invalidCode;
+
+		//Create a OtherLeft object
+		var otherLeft = new OtherLeft();
 	</script>
 
 	<link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
@@ -146,6 +149,15 @@
 			line-height: 1em;
 			width: 49.44134078212291%;
 			width: 80%;
+		}
+
+		/* Translate exit button down if on mobile device */
+		@media (hover: none) and (pointer: coarse) {
+			/* ... */
+			#exitGameButton {
+				transform: translateY(100px);
+				bottom: 12.5px;
+			}
 		}
 
 		.close {
@@ -223,6 +235,14 @@
 		<div class="close" style="cursor: pointer;"></div>
 		<b class="overlayText">The other player has left!</b>
 	</div>
-	<div id="exitGameButton" class="customButton noselect" style="position: absolute; bottom: 12.5px; right: 50px; transform: translateY(-50px);display: none;" onclick="resetGame(); this.style.display = 'none';">Exit Game</div>
+	<div id="exitGameButton" class="customButton noselect exitButton" style="position: absolute; right: 50px; display: none;" onclick="resetGame(); this.style.display = 'none';">Exit Game</div>
+
+<script>
+	window.onerror = function (msg, url, line) {
+               alert("Message : " + msg );
+               alert("url : " + url );
+               alert("Line number : " + line );
+            }
+</script>
 </body>
 </html>

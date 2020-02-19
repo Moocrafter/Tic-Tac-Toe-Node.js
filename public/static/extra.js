@@ -177,6 +177,7 @@ function InvalidCode() {
 
 //Is a object which handles the other player overlay parts
 function OtherLeft() {
+  alert(1234567890)
   //Make sure the code knows that the overlay is showing or not which allows us to allow clicking anywhere to close the overlay
   this.isShowing = false;
 
@@ -194,8 +195,13 @@ function OtherLeft() {
 
   //Handles opening events
   this.open = () => {
+    alert(1);
     //Set this.isShowing to true so when we click the window it knows that it should close the overlay
     this.isShowing = true;
+
+    //If the canvas is showing then add some styling to push the overplay down some
+    document.getElementById("otherPlayerLeftOverlay").style.position = "absolute";
+    document.getElementById("otherPlayerLeftOverlay").style.top = "87.10369881109644vh";
 
     //Show the overlay
     document.getElementById("otherPlayerLeftOverlay").style.display = "";
@@ -204,9 +210,6 @@ function OtherLeft() {
     history.replaceState("", "Moocraft's Tic-Tac-Toe", "http://localhost:3000");
   };
 }
-
-//Create a OtherLeft object
-var otherLeft = new OtherLeft();
 
 //When the window is clicked the function runs
 window.onclick = () => {
@@ -248,8 +251,6 @@ async function resetGame() {
   //Set gameData.board to a array with 9 items of value undefined
   gameData.board = Array.apply(null, Array(9)).map(function (x, i) { return null; });
 }
-
-
 
 //Cross browser copy to clipboard function
 function copyToClipboard(text) {

@@ -50,7 +50,7 @@ app.get('/:gameCode', (req, res) => {
 //Runs on socket connection
 io.on('connection', (socket) => {
 	//Log that a user connected
-	console.log('a user connected');
+	console.log('a user connected || ' + socket.handshake.headers.referer);
 
 	if (/https*:\/\/localhost:3000\/(........)/.test(socket.handshake.headers.referer)) {
 		if (tempGames.hasOwnProperty(socket.handshake.headers.referer.replace(/https*:\/\/localhost:3000\//, ""))) {
@@ -90,11 +90,12 @@ io.on('connection', (socket) => {
 			//Define winner so we can tell if there is a winner or tie
 			workingGame.winner = null;
 
+			console.log(workingGame.p1.socketId + " || Line: 93")
 			//Send the opposite of the random number to p2
 			socket.emit("startPlayerData", (workingGame.currentTurn == 0 ? 1 : 0));
 
 			//Send the original random number to p1
-			socket.to(otherPlayer(socket, thisId, 1)).emit("startPlayerData", workingGame.currentTurn);
+			socket.to(workingGame.p1.socketId).emit("startPlayerData", workingGame.currentTurn);
 			
 			//Set the myTurn option of both player 1 and player 2
 			workingGame.p1.myTurn = (workingGame.currentTurn == 0 ? true : false);
@@ -122,20 +123,14 @@ io.on('connection', (socket) => {
 				//Set thisPlayer to p1 or p2 based on if they are p1 or p2
 				var thisPlayer = games[thisId][playerSocketId];
 
-				//Based on this player being p1 or p2 pick the opposite player side
-				var otherPlayer = (thisPlayer == "p1") ? "p2" : "p1";
-
 				//Send the other player a message that this player disconnected
-				socket.to(games[thisId][(games[thisId][playerSocketId] == "p1" ? "p2" : "p1")].socketId).emit(`otherPlayerLeft`, ``);
-				
-				//Remove the other player from the userToGame object from the context of games
-				delete userToGame[games[thisId][(games[thisId][playerSocketId] == "p1" ? "p2" : "p1")].socketId];
+				io.to(otherPlayer(playerSocketId, thisId, 1, true)).emit(`otherPlayerLeft`);
 				
 				//Log info about the user who disconnected
 				console.log(`This socket id: ${playerSocketId}\nSocket id removed: ${JSON.stringify(games[thisId][(games[thisId][playerSocketId] == "p1" ? "p2" : "p1")])}`);
-				
+
 				//Delete the game
-				delete games[thisId];
+				deleteGame(thisId, playerSocketId, true);
 			}else if (tempGames.hasOwnProperty(thisId)) {
 				//If there are more than two players in a tempGame than send a disconnect message
 				//if (Object.keys(tempGames[thisId]).length > 2) socket.to(tempGames[thisId][(tempGames[thisId][playerSocketId] == "p1" ? "p2" : "p1")].socketId).emit(`otherPlayerLeft`, ``);
@@ -251,11 +246,11 @@ io.on('connection', (socket) => {
 		//Get this games game id from the users socket id
 		var gameId = userToGame[socket.id];
 
+		//If gameId is undefined that means the game doesn't exist
+		if (gameId == undefined) return;
+
 		//If there is a winner then ignore this event
 		if (games[gameId].winner != null) return;
-
-		//Check if a the game a user is part of exists to stop a bug
-		if (!games.hasOwnProperty(gameId)) return;
 
 		//Set thisGame to the game that this user is in
 		var thisGame = games[gameId];
@@ -265,33 +260,33 @@ io.on('connection', (socket) => {
 
 		//Set currentTurn to the current turn of this game which is either "p1" or "p2"
 		var currentTurn = thisGame[socket.id];
-		console.log(thisGame)
-		//Check if the user who is trying to place a mark is currently allowed to place a mark
-		if (thisGame[currentTurn].myTurn) { //If it is their turn then continue
-			//Place the current users respective marker down in the board
-			thisGame.board[loc] = (currentTurn == "p1" ? 0 : 1);
 
-			//Change the currentTurn
-			thisGame.currentTurn = (thisGame.currentTurn == 0 ? 1 : 0);
+		//If it isn't a players turn then exit the function
+		if (!thisGame[currentTurn].myTurn) return;
+		
+		//Place the current users respective marker down in the board
+		thisGame.board[loc] = (currentTurn == "p1" ? 0 : 1);
 
-			//Change the var myTurn of both players so basically switch who can place a marker
-			thisGame[currentTurn].myTurn = !thisGame[currentTurn].myTurn;
-			thisGame[(currentTurn == "p1" ? "p2" : "p1")].myTurn = !thisGame[(currentTurn == "p1" ? "p2" : "p1")].myTurn;
+		//Change the currentTurn
+		thisGame.currentTurn = (thisGame.currentTurn == 0 ? 1 : 0);
 
-			//Add one to the markCount because a mark was placed
-			thisGame.markCount += 1;
+		//Change the var myTurn of both players so basically switch who can place a marker
+		thisGame[currentTurn].myTurn = !thisGame[currentTurn].myTurn;
+		thisGame[(currentTurn == "p1" ? "p2" : "p1")].myTurn = !thisGame[(currentTurn == "p1" ? "p2" : "p1")].myTurn;
 
-			//Tell the other player that the current player made a mark
-			socket.to(otherPlayer(socket, gameId, 1)).emit("otherMadeMark", loc);
+		//Add one to the markCount because a mark was placed
+		thisGame.markCount += 1;
 
-			//Check for a winner if there is one then set winnerExist to true
-			var winnerExist = checkForWinner(gameId);
+		//Tell the other player that the current player made a mark
+		socket.to(otherPlayer(socket, gameId, 1)).emit("otherMadeMark", loc);
 
-			//If there is a winner then delete the game
-			if (winnerExist) {
-				//Delete the game
-				deleteGame(gameId, socket);
-			}
+		//Check for a winner if there is one then set winnerExist to true
+		var winnerExist = checkForWinner(gameId);
+
+		//If there is a winner then delete the game
+		if (winnerExist) {
+			//Delete the game
+			deleteGame(gameId, socket);
 		}
 	});
 
@@ -324,7 +319,14 @@ function sendDataToBoth(name, data, socket, id) {
 }
 
 //Return the other players socket id
-function otherPlayer(socket, id, gameScope) {
+function otherPlayer(socket, id, gameScope, isDisconnect) {
+	//If the type of otherPlayer has isDisconnect set to true then find the other player but without using their sockets just using their socket id
+	if (isDisconnect) {
+		if (gameScope == 0) return tempGames[id][(tempGames[id][socket] == "p1" ? "p2" : "p1")].socketId;
+		return games[id][(games[id][socket] == "p1" ? "p2" : "p1")].socketId;
+	}
+
+	//If isDisconnect is false then these lines run
 	if (gameScope == 0) return tempGames[id][(tempGames[id][socket.id] == "p1" ? "p2" : "p1")].socketId;
 	return games[id][(games[id][socket.id] == "p1" ? "p2" : "p1")].socketId;
 }
@@ -469,9 +471,9 @@ function generateGameCode() {
 }
 
 //Delete a game
-function deleteGame(gameId, thisPlayer) {
+function deleteGame(gameId, thisPlayer, isDisconnect) {
 	//Delete the other player from the user to game object
-	delete userToGame[otherPlayer(thisPlayer, gameId, 1)];
+	delete userToGame[otherPlayer(thisPlayer, gameId, 1, isDisconnect)];
 	
 	//Delete a player from the user to game object
 	delete userToGame[thisPlayer.id];
