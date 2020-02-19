@@ -1,0 +1,11 @@
+Tic-Tac-Toe Game
+Phone Type            Changes
+Galaxy S5             disable line height; move close button in landscape;
+Pixel 2               disable line height; move close button in landscape;
+Pixel 2 XL            disable line height in portrait; move close button landscape;
+iPhone 5/SE           disable line height; move close button in landscape;
+iPhone 6/7/8          disable line height; move close button in landscape;
+iPhone 6/7/8 Plus     disable line height; move close button in landscape;
+iPhone X              disable line height in portrait; move close button in landscape;
+iPad                  disable line height;
+iPad Pro              disable line height;
