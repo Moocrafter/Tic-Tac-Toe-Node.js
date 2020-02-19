@@ -177,7 +177,6 @@ function InvalidCode() {
 
 //Is a object which handles the other player overlay parts
 function OtherLeft() {
-  alert(1234567890)
   //Make sure the code knows that the overlay is showing or not which allows us to allow clicking anywhere to close the overlay
   this.isShowing = false;
 
@@ -195,7 +194,6 @@ function OtherLeft() {
 
   //Handles opening events
   this.open = () => {
-    alert(1);
     //Set this.isShowing to true so when we click the window it knows that it should close the overlay
     this.isShowing = true;
 
@@ -211,14 +209,22 @@ function OtherLeft() {
   };
 }
 
-//When the window is clicked the function runs
-window.onclick = () => {
-  //As long as invalidCode is not undefined then check if the overlay is showing if so close it
-  if (invalidCode != undefined) if (invalidCode.isShowing) invalidCode.close();
+//When the window is clicked or there is a touch the function runs
+/*$(function() {
+  $(document).on('touchstart click', 'body', function(e){
+    e.stopPropagation(); //stops 'ghost clicks' (double clicking)
+    //As long as invalidCode is not undefined then check if the overlay is showing if so close it
+    if (invalidCode != undefined) if (invalidCode.isShowing) invalidCode.close();
 
-  //Check if the overlay is showing if so close it and move to home screen
-  if (otherLeft.isShowing) otherLeft.close(); //Close the overlay and hide lots of other things
-};
+    //Check if the overlay is showing if so close it and move to home screen
+    if (otherLeft.isShowing) otherLeft.close(); //Close the overlay and hide lots of other things
+
+    alert(1);
+  });
+});*/
+document.addEventListener("DOMContentLoaded", function() {
+  document.getElementsByTagName("body")[0].onclick = () => alert(1234567890);
+});
 
 async function resetGame() {
   //Hide the canvas
