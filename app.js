@@ -52,11 +52,11 @@ io.on('connection', (socket) => {
 	//Log that a user connected
 	console.log('a user connected || ' + socket.handshake.headers.referer);
 
-	if (/https*:\/\/localhost:3000\/(........)/.test(socket.handshake.headers.referer)) {
-		if (tempGames.hasOwnProperty(socket.handshake.headers.referer.replace(/https*:\/\/localhost:3000\//, ""))) {
-			//Set thisId to the id the client used
-			var thisId = socket.handshake.headers.referer.replace(/https*:\/\/localhost:3000\//, "");
+	//Set thisId to the id the client used
+	var thisId = socket.handshake.headers.referer.slice(-9).slice(1);
 
+	if (thisId) {
+		if (tempGames.hasOwnProperty(thisId)) {
 			//Set the socket id for a game to p2
 			tempGames[thisId][socket.id] = "p2";
 
@@ -101,6 +101,7 @@ io.on('connection', (socket) => {
 			workingGame.p1.myTurn = (workingGame.currentTurn == 0 ? true : false);
 			workingGame.p2.myTurn = (workingGame.currentTurn == 1 ? true : false);
 		}
+		console.log(tempGames)
 	}
 
 	//When a user disconnects log it

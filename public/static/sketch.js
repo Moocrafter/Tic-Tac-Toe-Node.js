@@ -13,14 +13,7 @@ function setup() {
 }
 
 //Set the gameData to the staring position
-var gameData = {
-  "waiting" : false,
-  "gameId" : "",
-  "myMark" : null,
-  "myTurn" : false,
-  "winner" : null,
-  "markCount" : 0,
-};
+var gameData = {};
 
 //Define isHidden as true so the draw function doesn't draw when we can't see the canvas
 var isHidden = true;
@@ -28,12 +21,23 @@ var isHidden = true;
 //Set canvasCreated to false so we know the canvas has not been created
 var canvasCreated = false;
 
-//Set gameData.board to a array with 9 items of value undefined
-gameData.board = Array.apply(null, Array(9)).map(function (x, i) { return null; });
-
 function draw() {
   //Once the canvas has been created p5js calls draw so I just set canvas created to true the first time through draw
-  if (!canvasCreated) {canvasCreated = true;resize();}
+  if (!canvasCreated) {
+    canvasCreated = true;
+    resize();
+    gameData = {
+      "waiting" : false,
+      "gameId" : "",
+      "myMark" : null,
+      "myTurn" : false,
+      "winner" : null,
+      "markCount" : 0,
+    };
+
+    //Set gameData.board to a array with 9 items of value undefined
+    gameData.board = Array.apply(null, Array(9)).map(function (x, i) { return null; });
+  }
 
   //If isHidden is true meaning the canvas shouldn't be showing then don't draw to the canvas
   if (!isHidden) {
@@ -421,9 +425,6 @@ function drawMarks() {
 }
 
 function addMarkToList(loc, markType, fromClient) {
-  //Don't change the board if there is a winner
-  if (gameData.winner != null) return;
-  
   //Change the turn once a mark is placed by either the current player or the server
   gameData.myTurn = !gameData.myTurn;
 
@@ -441,7 +442,7 @@ function addMarkToList(loc, markType, fromClient) {
     //Tell the server that the current player made a mark
     socket.emit("placedMark", loc);
   }
-
+  
   //Don't check for a winner unless there have been at least 5 moves because any less and no win nor tie is possible
   if (gameData.markCount >= 5) {
     //Check for a winner

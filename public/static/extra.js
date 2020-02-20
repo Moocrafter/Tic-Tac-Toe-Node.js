@@ -141,7 +141,7 @@ function InvalidCode() {
   this.isShowing = true;
 
   //Change the url to remove the game code
-  history.replaceState("", "Moocraft's Tic-Tac-Toe", "http://localhost:3000");
+  // history.replaceState("", "Moocraft's Tic-Tac-Toe", "http://localhost:3000");
 
   //Define invalidOverlay as the overlay element for convenience
   var invalidOverlay = document.getElementById("invalidCodeOverlay");
@@ -210,22 +210,13 @@ function OtherLeft() {
 }
 
 //When the window is clicked or there is a touch the function runs
-/*$(function() {
-  $(document).on('touchstart click', 'body', function(e){
-    e.stopPropagation(); //stops 'ghost clicks' (double clicking)
-    //As long as invalidCode is not undefined then check if the overlay is showing if so close it
-    if (invalidCode != undefined) if (invalidCode.isShowing) invalidCode.close();
+function docClicked() {
+  //As long as invalidCode is not undefined then check if the overlay is showing if so close it
+  if (invalidCode != undefined) if (invalidCode.isShowing) invalidCode.close();
 
-    //Check if the overlay is showing if so close it and move to home screen
-    if (otherLeft.isShowing) otherLeft.close(); //Close the overlay and hide lots of other things
-
-    alert(1);
-  });
-});*/
-document.addEventListener("DOMContentLoaded", function() {
-  document.getElementsByTagName("body")[0].onclick = () => alert(1234567890);
-});
-
+  //Check if the overlay is showing if so close it and move to home screen
+  if (otherLeft.isShowing) otherLeft.close(); //Close the overlay and hide lots of other things
+}
 async function resetGame() {
   //Hide the canvas
   document.getElementById("gameCanvas").style.display = "none";
@@ -252,6 +243,7 @@ async function resetGame() {
     "myMark" : null,
     "myTurn" : false,
     "winner" : null,
+    "markCount" : 0,
   };
 
   //Set gameData.board to a array with 9 items of value undefined
