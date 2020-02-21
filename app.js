@@ -101,7 +101,6 @@ io.on('connection', (socket) => {
 			workingGame.p1.myTurn = (workingGame.currentTurn == 0 ? true : false);
 			workingGame.p2.myTurn = (workingGame.currentTurn == 1 ? true : false);
 		}
-		console.log(tempGames)
 	}
 
 	//When a user disconnects log it
