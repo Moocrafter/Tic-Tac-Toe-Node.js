@@ -151,12 +151,25 @@
 			width: 80%;
 		}
 
-		/* Translate exit button down if on mobile device */
+		/* Translate exit button down if on mobile device 
 		@media (hover: none) and (pointer: coarse) {
-			/* ... */
+			/* ... 
 			#exitGameButton {
 				transform: translateY(100px);
 				bottom: 12.5px;
+			}
+		}*/
+		/* Translate exit button down if on desktop */
+		@media only screen and (min-device-width : 1024px) and/* (max-device-width : 1024px) */{
+			/* STYLES GO HERE */
+			#exitGameButton {
+				bottom: 12.5px;
+			}
+		}
+
+		@media only screen and (min-device-width: 824px) and (max-device-width: 1024px) {
+			#exitGameButton {
+				transform: translateY(100px);
 			}
 		}
 
