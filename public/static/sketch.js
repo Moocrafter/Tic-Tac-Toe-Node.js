@@ -97,10 +97,10 @@ function draw() {
         text("Finding random player...\n\nPlease wait...", 11.5, 30)
       }else {
         //Set the text size
-        textSize(22);
+        textSize(17.7);
 
         //Show the text
-        text(`Have a friend go to\nmoocraft.tk/tic-tac-toe/${gameData.gameId}`, 11.5/*-80*/, /*45*/30);
+        text(`Have a friend go to\nmoocraft.tk/projects/tic-tac-toe/${gameData.gameId}`, 10/*-80*/, /*45*/25);
       }
     }
   }
