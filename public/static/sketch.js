@@ -100,7 +100,7 @@ function draw() {
         textSize(17.7);
 
         //Show the text
-        text(`Have a friend go to\nmoocraft.tk/projects/tic-tac-toe/${gameData.gameId}`, 10/*-80*/, /*45*/25);
+        text(`Have a friend go to\n${location.host + location.pathname + gameData.gameId}/`, 10/*-80*/, /*45*/25);
       }
     }
   }

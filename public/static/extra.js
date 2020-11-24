@@ -140,8 +140,13 @@ function InvalidCode() {
   //Make sure the code knows that the overlay is showing or not which allows us to allow clicking anywhere to close the overlay
   this.isShowing = true;
 
-  //Change the url to remove the game code
-  // history.replaceState("", "Moocraft's Tic-Tac-Toe", "http://localhost:3000");
+  var splitPath = location.pathname.split("/");
+
+  //Remove the second to last object from the array
+  splitPath.splice(-2, 1);
+
+  //Change the url to remove the game code even if there isn't one it doesn't really matter
+  history.replaceState(null, "Moocraft's Tic-Tac-Toe", `${location.protocol}//${location.host + splitPath.join("/")}`)
 
   //Define invalidOverlay as the overlay element for convenience
   var invalidOverlay = document.getElementById("invalidCodeOverlay");
@@ -204,8 +209,18 @@ function OtherLeft() {
     //Show the overlay
     document.getElementById("otherPlayerLeftOverlay").style.display = "";
 
+    var myPath = location.pathname.split("/");
+
+    if (myPath.length === 3) {
+      myPath = "";
+    }else {
+      //Remove the second to last object from the array
+      myPath.splice(-2, 1);
+      myPath = myPath.join("/");
+    }
+
     //Change the url to remove the game code even if there isn't one it doesn't really matter
-    history.replaceState("", "Moocraft's Tic-Tac-Toe", "http://localhost:3000");
+    history.replaceState(null, "Moocraft's Tic-Tac-Toe", `${/*location.protocol}//${location.host + */myPath}`)
   };
 }
 
@@ -245,6 +260,19 @@ async function resetGame() {
     "winner" : null,
     "markCount" : 0,
   };
+
+  var myPath = location.pathname.split("/");
+
+  if (myPath.length === 3) {
+    myPath = "";
+  }else {
+    //Remove the second to last object from the array
+    myPath.splice(-2, 1);
+    myPath = myPath.join("/");
+  }
+
+  //Change the url to remove the game code even if there isn't one it doesn't really matter
+  history.replaceState(null, "Moocraft's Tic-Tac-Toe", `${/*location.protocol}//${location.host + */myPath}`)
 
   //Set gameData.board to a array with 9 items of value undefined
   gameData.board = Array.apply(null, Array(9)).map(function (x, i) { return null; });
